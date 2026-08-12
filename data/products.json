@@ -41,6 +41,8 @@
     { "slug": "estante-modular-geometrica", "price": 3600 },
     { "slug": "rack-ripas-verticais", "price": 2950 },
     { "slug": "banco-patio-ripado", "price": 1680 },
-    { "slug": "aparador-bar-escada", "price": 3450 }
+    { "slug": "aparador-bar-escada", "price": 3450 },
+    { "slug": "estante-assimetrica-cubos", "price": 4200 },
+    { "slug": "cristaleira-prateleira-escada", "price": 3900 }
   ]
 }

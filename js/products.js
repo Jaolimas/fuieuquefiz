@@ -171,7 +171,18 @@ const PRODUCTS = [
     image:"assets/products/aparador-bar-escada.png",
     short:"Aparador bar com portas em madeira maciça e prateleira superior em formato de escada, estrutura em ferro preto.",
     description:"Aparador com portas em madeira maciça e uma prateleira superior inclinada, estilo escada, em ferro preto — feito para expor garrafas e copos, com espaço fechado para guardar o resto.",
-    materials:"Madeira maciça + ferro preto fosco", dimensions:"150 × 170 × 45 cm", leadTime:"6 a 7 semanas" }
+    materials:"Madeira maciça + ferro preto fosco", dimensions:"150 × 170 × 45 cm", leadTime:"6 a 7 semanas" },
+
+  { slug:"estante-assimetrica-cubos", name:"Estante Assimétrica Cubos", category:"Estantes & Racks", price:4200,
+    image:"assets/products/estante-assimetrica-cubos.png",
+    short:"Estante de parede em cubos assimétricos escalonados, estrutura em ferro preto e prateleiras em madeira.",
+    description:"Módulos em forma de cubo se encaixam em alturas e profundidades diferentes, criando uma composição assimétrica na parede — estrutura soldada em ferro preto fosco, prateleiras em madeira maciça.",
+    materials:"Ferro preto fosco + madeira maciça", dimensions:"90 × 210 × 35 cm", leadTime:"6 a 7 semanas" },
+  { slug:"cristaleira-prateleira-escada", name:"Cristaleira Prateleira Escada", category:"Aparadores", price:3900,
+    image:"assets/products/cristaleira-prateleira-escada.png",
+    short:"Cristaleira com portas em madeira maciça e estrutura superior em ferro no formato de escada, com prateleiras abertas.",
+    description:"Base fechada com três portas em madeira maciça para guardar louça, coroada por uma estrutura em ferro preto no formato de escada com prateleiras abertas para exibir objetos e livros.",
+    materials:"Madeira maciça + ferro preto fosco", dimensions:"140 × 170 × 40 cm", leadTime:"6 a 7 semanas" }
 ];
 
 /* ==========================================================================
