@@ -551,11 +551,6 @@
   justify-content: center;
 }
 
-.product-shot--1 { background: linear-gradient(135deg, #3A2E22, #6B4A30); }
-.product-shot--2 { background: linear-gradient(135deg, #40301F, #8A5A32); }
-.product-shot--3 { background: linear-gradient(135deg, #2E2620, #5C4630); }
-.product-shot--4 { background: linear-gradient(135deg, #362A1E, #7A5030); aspect-ratio: 4 / 5; }
-
 .product-shot-mark {
   font-family: var(--font-brand);
   font-style: italic;
@@ -596,20 +591,21 @@
    ========================================================================== */
 
 .process-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-2xl);
-  align-items: center;
 }
 
-@media (max-width: 834px) {
-  .process-grid {
-    grid-template-columns: 1fr;
-  }
+.process-photo {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-product);
+}
 
-  .process-photo {
-    order: -1;
-  }
+.process-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .process-text .lead-airy {
