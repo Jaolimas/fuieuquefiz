@@ -148,10 +148,13 @@ https://SEUSITE.vercel.app/api/webhook
 
 ### Testar antes de valer pra valer
 
-1. No [painel de desenvolvedor](https://www.mercadopago.com.br/developers/panel), crie/use um **usuário de teste** (vendedor de teste) e configure `MP_ACCESS_TOKEN`/`MP_PUBLIC_KEY` com as credenciais **de teste** (`TEST-...`) desse usuário — não as de produção — enquanto valida o fluxo.
-2. No checkout, use os **cartões de teste** do Mercado Pago (números fixos documentados no painel de desenvolvedor, em "Cartões de teste" — eles mudam por país, então confira lá em vez de usar um número de outra fonte). Cada cartão de teste tem um comportamento esperado (aprovado, recusado por saldo insuficiente, etc.) descrito na mesma página, útil para testar as mensagens de erro em português.
-3. Confirme no log da Vercel (aba **Logs** do projeto) que `api/create-order.js` está logando `{ orderId, status, statusDetail }` sem nenhum dado sensível, e que `api/webhook.js` está validando a assinatura corretamente (`"Webhook Mercado Pago validado"` no log).
-4. Só depois de tudo funcionando com credenciais de teste, troque `MP_ACCESS_TOKEN`/`MP_PUBLIC_KEY` pelas de **produção** e redeploy.
+⚠️ **A API de Orders (`/v1/orders`, usada em `api/create-order.js`) não aceita credenciais `TEST-...`** — diferente da API antiga de pagamentos. A própria documentação do Mercado Pago é explícita: *"There is no support for test credentials. Use test users with production credentials for the sandbox environment."* O jeito certo de testar é:
+
+1. Configure `MP_ACCESS_TOKEN`/`MP_PUBLIC_KEY` na Vercel com as credenciais de **produção** (`APP_USR-...`) da sua conta real — mesmo para testar. É isso que faz a chamada à API funcionar; o "modo sandbox" não vem da chave, vem do usuário de teste do passo 2.
+2. No [painel de desenvolvedor](https://www.mercadopago.com.br/developers/panel), crie um **usuário de teste comprador** (Suas integrações → sua aplicação → Contas de teste) e faça o pagamento de teste logado/pagando como esse usuário. O e-mail do pagador em ambiente de teste precisa terminar em `@testuser.com`, senão a API rejeita o pedido.
+3. Use os **cartões de teste** do Mercado Pago (números fixos documentados no painel de desenvolvedor, em "Cartões de teste" — eles mudam por país, então confira lá em vez de usar um número de outra fonte). Cada cartão de teste tem um comportamento esperado (aprovado, recusado por saldo insuficiente, etc.) descrito na mesma página, útil para testar as mensagens de erro em português.
+4. Se der "Não foi possível processar o pagamento" ou "Erro interno ao processar pagamento", confira no log da Vercel (aba **Logs** do projeto) a linha `Mercado Pago Orders API error:` — ela traz `status`, `error` e `cause` (o motivo exato que o Mercado Pago devolveu), sem dados sensíveis. `api/create-order.js` também loga `{ orderId, status, statusDetail }` quando dá certo, e `api/webhook.js` loga `"Webhook Mercado Pago validado"` quando a notificação chega.
+5. Como as credenciais de teste e de produção são as mesmas (`APP_USR-...`), não há "troca de chave" antes de ir ao ar — só pare de usar o usuário de teste comprador e passe a receber pagamentos de clientes reais.
 
 ## Sobre o modelo de checkout (importante)
 

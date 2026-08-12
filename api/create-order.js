@@ -172,8 +172,11 @@ export default async function handler(req, res) {
     const data = await mpRes.json();
 
     if (!mpRes.ok) {
-      /* Log só a estrutura do erro (sem PII/dados de cartão) para debug. */
-      console.error("Mercado Pago Orders API error:", { status: mpRes.status, error: data && data.message, cause: data && data.cause });
+      /* Log o corpo inteiro do erro (é a descrição da Mercado Pago sobre o
+         que está errado na NOSSA requisição — não inclui dado de cartão)
+         porque o formato de erro da API de Orders não é o mesmo da API
+         antiga (nem sempre tem `.message`/`.cause` no nível raiz). */
+      console.error("Mercado Pago Orders API error:", { status: mpRes.status, body: data });
       return res.status(502).json({ message: "Não foi possível processar o pagamento. Tente novamente ou finalize pelo WhatsApp." });
     }
 
