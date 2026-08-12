@@ -149,7 +149,6 @@ export default async function handler(req, res) {
             type: paymentType || "credit_card",
             token: formData.token,
             installments: formData.installments || 1,
-            issuer_id: formData.issuer_id || undefined,
             statement_descriptor: "FUIEUQUEFIZ"
           }
         }
