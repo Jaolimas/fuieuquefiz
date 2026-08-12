@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fuieuquefiz — Móveis rústicos industriais sob encomenda</title>
+  <meta name="description" content="Móveis rústicos industriais feitos à mão sob encomenda, com madeira de reflorestamento certificado e ferro forjado artesanalmente. Mesas, cadeiras, estantes e mais.">
+  <link rel="icon" href="assets/logo.jpg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+  <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+
+  <!-- REUSABLE NAV — copy exactly into other pages -->
+  <nav class="nav-global" aria-label="Navegação principal">
+    <div class="nav-inner">
+      <a class="nav-wordmark" href="index.html"><img class="nav-wordmark-logo" src="assets/logo.jpg" alt="FuiEuQueFiz"><span>FuiEuQueFiz</span></a>
+
+      <div class="nav-links" id="nav-links">
+        <a href="catalogo.html">Catálogo</a>
+        <a href="sobre.html#madeira">Nossa Madeira</a>
+        <a href="sobre.html">Sobre</a>
+        <a href="contato.html">Contato</a>
+      </div>
+
+      <div class="nav-actions">
+        <button class="nav-icon-btn" type="button" aria-label="Buscar">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.6"/>
+            <line x1="13.6" y1="13.6" x2="18" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button class="nav-icon-btn" type="button" id="cart-toggle" aria-label="Carrinho, 0 itens">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4 6h12l-1 9.5a1.5 1.5 0 0 1-1.5 1.35H6.5A1.5 1.5 0 0 1 5 15.5L4 6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M7 6V5a3 3 0 0 1 6 0v1" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+          <span class="nav-cart-badge" id="cart-badge">0</span>
+        </button>
+        <button class="nav-hamburger" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav-links">
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <!-- /REUSABLE NAV -->
+
+  <main id="main-content">
+
+    <!-- ================= HERO ================= -->
+    <section class="hero section--dark" aria-label="Abertura">
+      <p class="hero-eyebrow">MÓVEIS SOB ENCOMENDA</p>
+      <h1 class="hero-title">Cada peça carrega uma história.<br>A próxima é a sua.</h1>
+      <p class="hero-subhead">Móveis rústicos industriais feitos à mão, com madeira de reflorestamento certificado e ferro trabalhado sob encomenda.</p>
+      <div class="hero-ctas">
+        <a class="btn btn--hero btn--primary" href="catalogo.html">Ver catálogo</a>
+        <!-- TODO: substituir 5500000000000 pelo número real do WhatsApp da loja -->
+        <a class="btn btn--hero btn--ghost" href="https://wa.me/5500000000000?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20os%20m%C3%B3veis%20FuiEuQueFiz." target="_blank" rel="noopener">Falar com um especialista</a>
+      </div>
+      <div class="scroll-cue" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path class="scroll-cue-path" d="M6 9l6 6 6-6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ================= REVELAÇÃO (scroll morph) ================= -->
+    <section class="morph-section section--dark" id="sob-a-luz" aria-label="Uma peça, revelada aos poucos">
+      <div class="morph-pin">
+        <div class="morph-stage-wrap">
+          <video
+            class="morph-illustration morph-video"
+            id="morph-video"
+            src="assets/scroll-video/mesa-reveal.mp4"
+            poster="assets/scroll-video/mesa-reveal-poster.png"
+            muted
+            playsinline
+            preload="auto"
+            aria-label="Vídeo animado de uma mesa de jantar sendo revelada pela luz à medida que a página é rolada, câmera fixa, controlado pelo scroll nos dois sentidos"
+          ></video>
+        </div>
+        <p class="morph-caption" aria-live="polite"></p>
+        <div class="morph-progress"><span class="morph-progress-fill"></span></div>
+      </div>
+    </section>
+
+    <!-- ================= DESTAQUES ================= -->
+    <section class="section" aria-label="Destaques da coleção">
+      <div class="container-grid">
+        <h2 class="reveal">Destaques da coleção</h2>
+
+        <div class="product-grid reveal-stagger">
+          <article class="card reveal">
+            <a href="produto.html?slug=mesa-de-jantar-vigamestra" class="product-card-link">
+              <div class="product-shot">
+                <img src="assets/products/mesa-de-jantar-vigamestra.jpg" alt="Mesa de Jantar Vigamestra" loading="lazy">
+              </div>
+              <h3 class="product-name">Mesa de Jantar Vigamestra</h3>
+              <p class="product-price">R$ 8.900</p>
+              <span class="product-link">Ver peça →</span>
+            </a>
+          </article>
+
+          <article class="card reveal">
+            <a href="produto.html?slug=poltrona-fundicao" class="product-card-link">
+              <div class="product-shot">
+                <img src="assets/products/poltrona-fundicao.jpg" alt="Poltrona Fundição" loading="lazy">
+              </div>
+              <h3 class="product-name">Poltrona Fundição</h3>
+              <p class="product-price">R$ 4.100</p>
+              <span class="product-link">Ver peça →</span>
+            </a>
+          </article>
+
+          <article class="card reveal">
+            <a href="produto.html?slug=estante-andaime" class="product-card-link">
+              <div class="product-shot">
+                <img src="assets/products/estante-andaime.jpg" alt="Estante Andaime" loading="lazy">
+              </div>
+              <h3 class="product-name">Estante Andaime</h3>
+              <p class="product-price">R$ 5.600</p>
+              <span class="product-link">Ver peça →</span>
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PROCESSO ================= -->
+    <section class="section section--alt" aria-label="Do desenho à entrega">
+      <div class="container-grid process-grid">
+        <div class="process-text reveal">
+          <h2>Do desenho à entrega</h2>
+          <p class="lead-airy">Trabalhamos peça a peça, com marceneiros e ferreiros parceiros — do primeiro esboço até a entrega na sua casa, cada etapa é acompanhada de perto.</p>
+
+          <ol class="process-steps">
+            <li>
+              <span class="process-step-number">01</span>
+              <span class="process-step-label">Design & orçamento</span>
+            </li>
+            <li>
+              <span class="process-step-number">02</span>
+              <span class="process-step-label">Seleção da madeira</span>
+            </li>
+            <li>
+              <span class="process-step-number">03</span>
+              <span class="process-step-label">Marcenaria artesanal</span>
+            </li>
+            <li>
+              <span class="process-step-number">04</span>
+              <span class="process-step-label">Entrega e montagem</span>
+            </li>
+          </ol>
+        </div>
+
+        <div class="process-photo reveal">
+          <div class="product-shot product-shot--4" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SUSTENTABILIDADE ================= -->
+    <section class="section section--dark sustainability" aria-label="Nossa madeira tem origem">
+      <div class="container-grid">
+        <h2 class="sustainability-title reveal">Nossa madeira tem origem</h2>
+
+        <div class="sustainability-grid reveal-stagger">
+          <div class="sustainability-item reveal">
+            <p class="sustainability-headline">Manejo florestal certificado</p>
+            <p class="sustainability-body">Toda madeira nativa utilizada vem de manejo florestal responsável, com certificação de origem.</p>
+          </div>
+          <div class="sustainability-item reveal">
+            <p class="sustainability-headline">Madeira de reaproveitamento e demolição</p>
+            <p class="sustainability-body">Vigas, tábuas e dormentes recuperados ganham nova vida, sem exigir corte adicional.</p>
+          </div>
+          <div class="sustainability-item reveal">
+            <p class="sustainability-headline">Rastreabilidade</p>
+            <p class="sustainability-body">Nota fiscal de origem em cada peça, com procedência documentada do material.</p>
+          </div>
+          <div class="sustainability-item reveal">
+            <p class="sustainability-headline">Parceria com marcenarias familiares</p>
+            <p class="sustainability-body">Produção artesanal em oficinas familiares brasileiras, preservando o ofício.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CATÁLOGO TEASER ================= -->
+    <section class="section catalog-teaser" aria-label="Explore o catálogo completo">
+      <div class="container-text">
+        <h2 class="reveal">Explore o catálogo completo</h2>
+        <p class="lead reveal">Mesas, cadeiras, estantes, aparadores e iluminação — cada peça feita sob encomenda, no seu tamanho e acabamento.</p>
+        <a class="btn btn--primary reveal" href="catalogo.html">Ver todas as peças</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- REUSABLE FOOTER — copy exactly into other pages -->
+  <footer class="footer">
+    <div class="container-grid">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="nav-wordmark" href="index.html"><img class="nav-wordmark-logo" src="assets/logo.jpg" alt="FuiEuQueFiz"><span>FuiEuQueFiz</span></a>
+          <p class="footer-tagline">Móveis rústicos industriais feitos à mão, sob encomenda.</p>
+        </div>
+
+        <div class="footer-col">
+          <p class="footer-col-title">Catálogo</p>
+          <ul>
+            <li><a href="catalogo.html">Mesas</a></li>
+            <li><a href="catalogo.html">Cadeiras &amp; Poltronas</a></li>
+            <li><a href="catalogo.html">Estantes &amp; Racks</a></li>
+            <li><a href="catalogo.html">Aparadores</a></li>
+            <li><a href="catalogo.html">Iluminação</a></li>
+            <li><a href="catalogo.html">Sob encomenda</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <p class="footer-col-title">Sobre</p>
+          <ul>
+            <li><a href="sobre.html#historia">Nossa história</a></li>
+            <li><a href="sobre.html#madeira">Sustentabilidade</a></li>
+            <li><a href="sobre.html#processo">Processo artesanal</a></li>
+            <li><a href="sobre.html#trabalhe">Trabalhe conosco</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <p class="footer-col-title">Atendimento</p>
+          <ul>
+            <li><a href="https://wa.me/5500000000000?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20os%20m%C3%B3veis%20FuiEuQueFiz." target="_blank" rel="noopener">WhatsApp</a></li>
+            <li><a href="contato.html#faq">Perguntas frequentes</a></li>
+            <li><a href="contato.html#entrega">Entrega e frete</a></li>
+            <li><a href="contato.html#garantia">Garantia e cuidados</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-trust">
+        <span class="footer-badge">Pix</span>
+        <span class="footer-badge">Cartão em até 10x</span>
+        <span class="footer-badge">Nota fiscal em todas as peças</span>
+      </div>
+
+      <div class="footer-legal">
+        <span>© 2026 FuiEuQueFiz. Todos os direitos reservados.</span>
+        <a href="#">Política de privacidade</a>
+        <a href="#">Termos de uso</a>
+      </div>
+    </div>
+  </footer>
+  <!-- /REUSABLE FOOTER -->
+
+  <script src="js/products.js" defer></script>
+  <script src="js/cart.js" defer></script>
+  <script src="js/main.js" defer></script>
+  <script src="js/scroll-morph.js" defer></script>
+</body>
+</html>

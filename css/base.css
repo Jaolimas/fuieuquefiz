@@ -1,0 +1,158 @@
+/* ==========================================================================
+   FuiEuQueFiz — Base
+   Reset, document defaults, layout utilities.
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: auto; /* smooth-scroll is handled in JS so we can respect reduced-motion */
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-text);
+  font-weight: 400;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-body);
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+picture,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+}
+
+ul,
+ol {
+  list-style: none;
+  padding: 0;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+h1 {
+  font-size: var(--text-hero);
+  line-height: var(--leading-hero);
+  letter-spacing: var(--tracking-hero);
+}
+
+h2 {
+  font-size: var(--text-display-md);
+  line-height: var(--leading-display-md);
+  letter-spacing: var(--tracking-display-md);
+}
+
+h3 {
+  font-size: var(--text-body-strong);
+  line-height: var(--leading-body-strong);
+  letter-spacing: var(--tracking-body-strong);
+}
+
+/* ==========================================================================
+   Layout utilities
+   ========================================================================== */
+
+.container-text {
+  max-width: var(--container-text);
+  margin-inline: auto;
+  padding-inline: var(--space-lg);
+}
+
+.container-grid {
+  max-width: var(--container-grid);
+  margin-inline: auto;
+  padding-inline: var(--space-lg);
+}
+
+.section {
+  padding: var(--space-section) 0;
+}
+
+.section--alt {
+  background: var(--color-canvas-alt);
+}
+
+.section--dark {
+  background: var(--color-dark-1);
+  color: var(--color-on-dark);
+}
+
+.section--dark a {
+  color: var(--color-action-on-dark);
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: var(--space-2xl) 0;
+  }
+}
+
+/* ==========================================================================
+   Accessibility utilities
+   ========================================================================== */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--space-lg);
+  z-index: 1000;
+  background: var(--color-action);
+  color: #fff;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-caption-strong);
+  font-weight: 600;
+  transition: top var(--duration) var(--ease);
+}
+
+.skip-link:focus {
+  top: var(--space-lg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-action-focus);
+  outline-offset: 2px;
+}

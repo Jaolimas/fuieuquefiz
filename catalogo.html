@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo completo — FuiEuQueFiz</title>
+  <meta name="description" content="Móveis rústicos industriais feitos sob encomenda e peças exclusivas em madeira maciça, com madeira de reflorestamento certificado e ferro forjado artesanalmente. Filtre por categoria e ordene por preço.">
+  <link rel="icon" href="assets/logo.jpg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+  <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+
+  <!-- REUSABLE NAV — copy exactly into other pages -->
+  <nav class="nav-global" aria-label="Navegação principal">
+    <div class="nav-inner">
+      <a class="nav-wordmark" href="index.html"><img class="nav-wordmark-logo" src="assets/logo.jpg" alt="FuiEuQueFiz"><span>FuiEuQueFiz</span></a>
+
+      <div class="nav-links" id="nav-links">
+        <a href="catalogo.html">Catálogo</a>
+        <a href="sobre.html#madeira">Nossa Madeira</a>
+        <a href="sobre.html">Sobre</a>
+        <a href="contato.html">Contato</a>
+      </div>
+
+      <div class="nav-actions">
+        <button class="nav-icon-btn" type="button" aria-label="Buscar">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.6"/>
+            <line x1="13.6" y1="13.6" x2="18" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button class="nav-icon-btn" type="button" id="cart-toggle" aria-label="Carrinho, 0 itens">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4 6h12l-1 9.5a1.5 1.5 0 0 1-1.5 1.35H6.5A1.5 1.5 0 0 1 5 15.5L4 6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M7 6V5a3 3 0 0 1 6 0v1" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+          <span class="nav-cart-badge" id="cart-badge">0</span>
+        </button>
+        <button class="nav-hamburger" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav-links">
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <!-- /REUSABLE NAV -->
+
+  <main id="main-content">
+
+    <!-- ================= CATÁLOGO ================= -->
+    <section class="section" aria-label="Catálogo completo">
+      <div class="container-grid">
+        <div class="catalog-header">
+          <h1 class="reveal">Catálogo completo</h1>
+          <p class="lead reveal">Móveis sob encomenda e peças exclusivas em madeira maciça — acabamento e medidas personalizáveis.</p>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-pills" id="filter-pills" role="group" aria-label="Filtrar por categoria"></div>
+
+          <select class="sort-select" id="sort-select" aria-label="Ordenar por">
+            <option value="relevancia">Relevância</option>
+            <option value="menor-preco">Menor preço</option>
+            <option value="maior-preco">Maior preço</option>
+          </select>
+        </div>
+
+        <div class="product-grid reveal-stagger" id="catalog-grid"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- REUSABLE FOOTER — copy exactly into other pages -->
+  <footer class="footer">
+    <div class="container-grid">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="nav-wordmark" href="index.html"><img class="nav-wordmark-logo" src="assets/logo.jpg" alt="FuiEuQueFiz"><span>FuiEuQueFiz</span></a>
+          <p class="footer-tagline">Móveis rústicos industriais feitos à mão, sob encomenda.</p>
+        </div>
+
+        <div class="footer-col">
+          <p class="footer-col-title">Catálogo</p>
+          <ul>
+            <li><a href="catalogo.html">Mesas</a></li>
+            <li><a href="catalogo.html">Cadeiras &amp; Poltronas</a></li>
+            <li><a href="catalogo.html">Estantes &amp; Racks</a></li>
+            <li><a href="catalogo.html">Aparadores</a></li>
+            <li><a href="catalogo.html">Iluminação</a></li>
+            <li><a href="catalogo.html">Sob encomenda</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <p class="footer-col-title">Sobre</p>
+          <ul>
+            <li><a href="sobre.html#historia">Nossa história</a></li>
+            <li><a href="sobre.html#madeira">Sustentabilidade</a></li>
+            <li><a href="sobre.html#processo">Processo artesanal</a></li>
+            <li><a href="sobre.html#trabalhe">Trabalhe conosco</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <p class="footer-col-title">Atendimento</p>
+          <ul>
+            <li><a href="https://wa.me/5500000000000?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20os%20m%C3%B3veis%20FuiEuQueFiz." target="_blank" rel="noopener">WhatsApp</a></li>
+            <li><a href="contato.html#faq">Perguntas frequentes</a></li>
+            <li><a href="contato.html#entrega">Entrega e frete</a></li>
+            <li><a href="contato.html#garantia">Garantia e cuidados</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-trust">
+        <span class="footer-badge">Pix</span>
+        <span class="footer-badge">Cartão em até 10x</span>
+        <span class="footer-badge">Nota fiscal em todas as peças</span>
+      </div>
+
+      <div class="footer-legal">
+        <span>© 2026 FuiEuQueFiz. Todos os direitos reservados.</span>
+        <a href="#">Política de privacidade</a>
+        <a href="#">Termos de uso</a>
+      </div>
+    </div>
+  </footer>
+  <!-- /REUSABLE FOOTER -->
+
+  <script src="js/products.js" defer></script>
+  <script src="js/cart.js" defer></script>
+  <script src="js/main.js" defer></script>
+  <script src="js/catalog.js" defer></script>
+</body>
+</html>

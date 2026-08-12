@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nossa história — FuiEuQueFiz</title>
+  <meta name="description" content="Conheça a história da FuiEuQueFiz, a origem certificada da nossa madeira, o processo artesanal por trás de cada peça e como trabalhar com a gente.">
+  <link rel="icon" href="assets/logo.jpg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+  <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+
+  <!-- REUSABLE NAV — copy exactly into other pages -->
+  <nav class="nav-global" aria-label="Navegação principal">
+    <div class="nav-inner">
+      <a class="nav-wordmark" href="index.html"><img class="nav-wordmark-logo" src="assets/logo.jpg" alt="FuiEuQueFiz"><span>FuiEuQueFiz</span></a>
+
+      <div class="nav-links" id="nav-links">
+        <a href="catalogo.html">Catálogo</a>
+        <a href="sobre.html#madeira">Nossa Madeira</a>
+        <a href="sobre.html">Sobre</a>
+        <a href="contato.html">Contato</a>
+      </div>
+
+      <div class="nav-actions">
+        <button class="nav-icon-btn" type="button" aria-label="Buscar">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.6"/>
+            <line x1="13.6" y1="13.6" x2="18" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button class="nav-icon-btn" type="button" id="cart-toggle" aria-label="Carrinho, 0 itens">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4 6h12l-1 9.5a1.5 1.5 0 0 1-1.5 1.35H6.5A1.5 1.5 0 0 1 5 15.5L4 6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M7 6V5a3 3 0 0 1 6 0v1" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+          <span class="nav-cart-badge" id="cart-badge">0</span>
+        </button>
+        <button class="nav-hamburger" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav-links">
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <!-- /REUSABLE NAV -->
+
+  <main id="main-content">
+
+    <!-- ================= NOSSA HISTÓRIA ================= -->
+    <section id="historia" class="section" aria-label="Nossa história">
+      <div class="container-text">
+        <h1 class="content-title reveal">Nossa história</h1>
+        <p class="content-lead reveal">FuiEuQueFiz começou pequena — uma marcenaria parceira, uma mesa por vez — com uma ideia simples: cada móvel deveria carregar o nome de quem realmente o fez.</p>
+        <div class="content-body reveal">
+          <p>O nome não é acaso. "Fui eu que fiz" é o que um marceneiro diz, com orgulho, quando entrega uma peça pronta. Fomos atrás desse orgulho — reunindo um pequeno grupo de marceneiros e ferreiros independentes, cada um com sua própria oficina, seu próprio jeito de lixar uma tábua ou soldar uma junta.</p>
+          <p>Hoje seguimos do mesmo jeito: sem linha de montagem, sem produção em massa. Cada peça sai de uma oficina específica, é assinada e pode ser rastreada até quem a fez. Comprar aqui não é só comprar um móvel — é encomendar o trabalho de alguém que assina o que produz.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= NOSSA MADEIRA ================= -->
+    <section id="madeira" class="section section--dark sustainability" aria-label="Nossa madeira tem origem">
+      <div class="container-grid">
+        <h2 class="sustainability-title reveal">Nossa madeira tem origem</h2>
+
+        <div class="content-body reveal">
+          <p>Toda peça FuiEuQueFiz carrega madeira com origem conhecida — e isso não é coincidência, é política da casa. Trabalhamos com dois canais de fornecimento, e só esses dois. O primeiro é madeira de reflorestamento certificado: espécies plantadas especificamente para manejo florestal responsável, com certificação de origem em cada lote que entra na oficina. O segundo é madeira de reaproveitamento — vigas, tábuas e dormentes recuperados de demolições e estruturas antigas, que ganham uma segunda vida sem exigir o corte de uma única árvore nova.</p>
+          <p>Não trabalhamos com madeira nativa de origem não certificada, e não compramos de fornecedores sem documentação completa — mesmo quando isso significa esperar mais para fechar um pedido. Cada nota fiscal de origem é guardada e pode ser consultada pelo cliente: se uma peça leva madeira de lei, você pode perguntar de onde ela veio, e nós temos a resposta, com papel que comprove.</p>
+        </div>
+
+        <div class="sustainability-grid reveal-stagger">
+          <div class="sustainability-item reveal">
+            <p class="sustainability-headline">100% madeira rastreada</p>
+            <p class="sustainability-body">Cada peça sai da oficina com nota fiscal de origem, documentando a procedência do material usado.</p>
+          </div>
+          <div class="sustainability-item reveal">
+            <p class="sustainability-headline">0% madeira nativa sem certificação</p>
+            <p class="sustainability-body">Não compramos madeira nativa de origem não documentada, nem de fornecedores sem certificação.</p>
+          </div>
+          <div class="sustainability-item reveal">
+            <p class="sustainability-headline">12 marcenarias parceiras</p>
+            <p class="sustainability-body">Uma rede de oficinas familiares brasileiras, cada uma responsável pelas peças que assina.</p>
+          </div>
+          <div class="sustainability-item reveal">
+            <p class="sustainability-headline">2 canais de origem</p>
+            <p class="sustainability-body">Reflorestamento certificado e reaproveitamento de demolição — nunca corte nativo não certificado.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PROCESSO ARTESANAL ================= -->
+    <section id="processo" class="section section--alt" aria-label="Processo artesanal">
+      <div class="container-text">
+        <h2 class="reveal">Processo artesanal</h2>
+        <p class="content-lead reveal">Do primeiro esboço até a entrega, cada etapa é acompanhada de perto — sem atalhos e sem linha de montagem.</p>
+
+        <ol class="process-detail-steps reveal-stagger">
+          <li class="reveal">
+            <span class="process-detail-number">01</span>
+            <div>
+              <p class="process-detail-title">Design &amp; orçamento</p>
+              <p class="process-detail-desc">Você nos conta o que precisa — medidas, uso, estilo — e devolvemos um orçamento detalhado com opções de madeira, acabamento e prazo. Ajustamos o desenho quantas vezes for preciso antes de aprovar a produção.</p>
+            </div>
+          </li>
+          <li class="reveal">
+            <span class="process-detail-number">02</span>
+            <div>
+              <p class="process-detail-title">Seleção da madeira</p>
+              <p class="process-detail-desc">Escolhemos, junto com a marcenaria parceira, o lote de madeira que melhor atende à peça — respeitando veios, nós e a origem certificada de cada tábua. Nenhuma peça começa a ser cortada sem essa etapa.</p>
+            </div>
+          </li>
+          <li class="reveal">
+            <span class="process-detail-number">03</span>
+            <div>
+              <p class="process-detail-title">Marcenaria artesanal</p>
+              <p class="process-detail-desc">Corte, montagem e acabamento acontecem à mão, prancha a prancha, na oficina do marceneiro ou ferreiro responsável. Cada solda, encaixe e lixamento é feito por uma pessoa — não por uma linha de produção.</p>
+            </div>
+          </li>
+          <li class="reveal">
+            <span class="process-detail-number">04</span>
+            <div>
+              <p class="process-detail-title">Entrega e montagem</p>
+              <p class="process-detail-desc">A peça é embalada com cuidado, transportada com agendamento prévio e montada no seu espaço pela nossa equipe, quando exigir montagem. Você recebe orientações de cuidado junto com a entrega.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ================= TRABALHE CONOSCO ================= -->
+    <section id="trabalhe" class="section" aria-label="Trabalhe conosco">
+      <div class="container-text">
+        <h2 class="reveal">Trabalhe conosco</h2>
+        <div class="content-body reveal">
+          <p>Se você é marceneiro, ferreiro ou tem uma oficina independente e quer fazer parte da rede FuiEuQueFiz, queremos te conhecer. Também topamos conversar com quem está começando e busca um primeiro parceiro para vender peças autorais sob encomenda. Manda uma mensagem contando um pouco do seu trabalho.</p>
+        </div>
+        <a class="btn btn--primary reveal" href="https://wa.me/5500000000000?text=Ol%C3%A1!%20Gostaria%20de%20saber%20mais%20sobre%20trabalhar%20com%20a%20FuiEuQueFiz." target="_blank" rel="noopener">Falar com a gente no WhatsApp</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- REUSABLE FOOTER — copy exactly into other pages -->
+  <footer class="footer">
+    <div class="container-grid">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="nav-wordmark" href="index.html"><img class="nav-wordmark-logo" src="assets/logo.jpg" alt="FuiEuQueFiz"><span>FuiEuQueFiz</span></a>
+          <p class="footer-tagline">Móveis rústicos industriais feitos à mão, sob encomenda.</p>
+        </div>
+
+        <div class="footer-col">
+          <p class="footer-col-title">Catálogo</p>
+          <ul>
+            <li><a href="catalogo.html">Mesas</a></li>
+            <li><a href="catalogo.html">Cadeiras &amp; Poltronas</a></li>
+            <li><a href="catalogo.html">Estantes &amp; Racks</a></li>
+            <li><a href="catalogo.html">Aparadores</a></li>
+            <li><a href="catalogo.html">Iluminação</a></li>
+            <li><a href="catalogo.html">Sob encomenda</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <p class="footer-col-title">Sobre</p>
+          <ul>
+            <li><a href="sobre.html#historia">Nossa história</a></li>
+            <li><a href="sobre.html#madeira">Sustentabilidade</a></li>
+            <li><a href="sobre.html#processo">Processo artesanal</a></li>
+            <li><a href="sobre.html#trabalhe">Trabalhe conosco</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <p class="footer-col-title">Atendimento</p>
+          <ul>
+            <li><a href="https://wa.me/5500000000000?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20os%20m%C3%B3veis%20FuiEuQueFiz." target="_blank" rel="noopener">WhatsApp</a></li>
+            <li><a href="contato.html#faq">Perguntas frequentes</a></li>
+            <li><a href="contato.html#entrega">Entrega e frete</a></li>
+            <li><a href="contato.html#garantia">Garantia e cuidados</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-trust">
+        <span class="footer-badge">Pix</span>
+        <span class="footer-badge">Cartão em até 10x</span>
+        <span class="footer-badge">Nota fiscal em todas as peças</span>
+      </div>
+
+      <div class="footer-legal">
+        <span>© 2026 FuiEuQueFiz. Todos os direitos reservados.</span>
+        <a href="#">Política de privacidade</a>
+        <a href="#">Termos de uso</a>
+      </div>
+    </div>
+  </footer>
+  <!-- /REUSABLE FOOTER -->
+
+  <script src="js/products.js" defer></script>
+  <script src="js/cart.js" defer></script>
+  <script src="js/main.js" defer></script>
+</body>
+</html>

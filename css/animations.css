@@ -1,0 +1,132 @@
+/* ==========================================================================
+   FuiEuQueFiz — Animations
+   ========================================================================== */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity var(--duration-reveal) var(--ease), transform var(--duration-reveal) var(--ease);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal-stagger > *:nth-child(1) { transition-delay: 0ms; }
+.reveal-stagger > *:nth-child(2) { transition-delay: 80ms; }
+.reveal-stagger > *:nth-child(3) { transition-delay: 160ms; }
+.reveal-stagger > *:nth-child(4) { transition-delay: 240ms; }
+.reveal-stagger > *:nth-child(5) { transition-delay: 320ms; }
+.reveal-stagger > *:nth-child(6) { transition-delay: 400ms; }
+
+/* Product image hover treatment — cards only, never full-bleed hero photography */
+.product-shot img {
+  transition: transform 500ms var(--ease);
+}
+
+.card:hover .product-shot img {
+  transform: scale(1.035);
+}
+
+/* Scroll cue on hero */
+.scroll-cue {
+  animation: scroll-cue-bounce 2.2s var(--ease) infinite;
+}
+
+@keyframes scroll-cue-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+/* ==========================================================================
+   Scroll-morph — "da árvore ao móvel"
+   ========================================================================== */
+
+.morph-section {
+  height: 600vh;
+  position: relative;
+  /* The hero directly above is also .section--dark (dark-1). Per the
+     alternating-background rule, two touching dark sections step through
+     dark-2 rather than repeating the identical flat dark-1 background. */
+  background: var(--color-dark-2);
+}
+
+.morph-pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.morph-stage-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.morph-illustration {
+  width: min(88vw, 980px);
+  height: auto;
+}
+
+.morph-video {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-product);
+  background: var(--color-dark-3);
+}
+
+.morph-caption {
+  margin-top: var(--space-lg);
+  font: 400 var(--text-lead-airy)/var(--leading-lead-airy) var(--font-display);
+  color: var(--color-on-dark-muted);
+  text-align: center;
+  max-width: 560px;
+  padding: 0 var(--space-lg);
+  min-height: 2.6em;
+}
+
+.morph-progress {
+  width: 120px;
+  height: 2px;
+  background: rgba(247, 243, 238, 0.2);
+  margin-top: var(--space-xl);
+}
+
+.morph-progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--color-action-on-dark);
+  width: 0%;
+  transition: width 100ms linear;
+}
+
+/* ==========================================================================
+   Reduced motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .scroll-cue {
+    animation: none !important;
+  }
+}

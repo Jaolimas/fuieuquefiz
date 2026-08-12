@@ -1,0 +1,77 @@
+/* ==========================================================================
+   FuiEuQueFiz — Design Tokens
+   Single source of truth. Do not hardcode hex values elsewhere — reference
+   these custom properties instead.
+   ========================================================================== */
+
+:root {
+  /* color */
+  --color-action: #A6491E;
+  --color-action-focus: #BF5A22;
+  --color-action-on-dark: #D9793F;
+  --color-ink: #211C17;
+  --color-ink-80: #4A4038;
+  --color-ink-48: #8A7F74;
+  --color-on-dark: #F7F3EE;
+  --color-on-dark-muted: #CBBFB0;
+  --color-canvas: #FBF9F6;
+  --color-canvas-alt: #F1ECE4;
+  --color-surface-pearl: #F7F4EF;
+  --color-dark-1: #221D18;
+  --color-dark-2: #2A231D;
+  --color-dark-3: #1A1613;
+  --color-black: #14110D;
+  --color-hairline: #E4DCD0;
+  --color-divider: #EFE8DE;
+  --color-chip: rgba(235, 225, 212, 0.72);
+
+  /* typography families */
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-text: 'Inter', -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-brand: 'Fraunces', Georgia, serif; /* wordmark ONLY, never body/heading text */
+
+  /* type scale — size / line-height / letter-spacing / weight */
+  --text-hero: 56px;              --leading-hero: 1.07;              --tracking-hero: -0.28px;          /* weight 600 */
+  --text-display-lg: 40px;        --leading-display-lg: 1.10;        --tracking-display-lg: 0;          /* weight 600 */
+  --text-display-md: 34px;        --leading-display-md: 1.47;        --tracking-display-md: -0.374px;   /* weight 600 */
+  --text-lead: 28px;              --leading-lead: 1.14;              --tracking-lead: 0.196px;          /* weight 400 */
+  --text-lead-airy: 24px;         --leading-lead-airy: 1.5;          --tracking-lead-airy: 0;           /* weight 300 */
+  --text-tagline: 21px;           --leading-tagline: 1.19;           --tracking-tagline: 0.231px;       /* weight 600 */
+  --text-body-strong: 17px;       --leading-body-strong: 1.24;       --tracking-body-strong: -0.374px;  /* weight 600 */
+  --text-body: 17px;              --leading-body: 1.47;              --tracking-body: -0.374px;         /* weight 400 */
+  --text-caption: 14px;           --leading-caption: 1.43;           --tracking-caption: -0.224px;      /* weight 400 */
+  --text-caption-strong: 14px;    --leading-caption-strong: 1.29;    --tracking-caption-strong: -0.224px; /* weight 600 */
+  --text-fine: 12px;              --leading-fine: 1.0;               --tracking-fine: -0.12px;          /* weight 400 */
+
+  /* spacing (base 8px) */
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 17px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-section: 80px;
+
+  /* radius */
+  --radius-sm: 8px;
+  --radius-md: 11px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+  --radius-full: 50%;
+
+  /* elevation */
+  --shadow-product: 4px 8px 34px rgba(33, 20, 10, 0.28); /* ONLY ever applied to product photography, never to cards/buttons/text */
+  --border-hairline: 1px solid var(--color-hairline);
+  --glass-blur: saturate(180%) blur(20px);
+
+  /* motion */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration: 200ms;
+  --duration-reveal: 700ms;
+
+  /* layout */
+  --container-text: 980px;
+  --container-grid: 1440px;
+}
