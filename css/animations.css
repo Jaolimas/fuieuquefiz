@@ -69,17 +69,34 @@
   justify-content: center;
 }
 
-.morph-illustration {
-  width: min(88vw, 980px);
-  height: auto;
+.morph-carousel {
+  position: relative;
+  width: min(70vw, 480px);
+  aspect-ratio: 4 / 5;
 }
 
-.morph-video {
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
+.morph-carousel-item {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-product);
   background: var(--color-dark-3);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 500ms var(--ease);
+}
+
+.morph-carousel-item.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.morph-carousel-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .morph-caption {

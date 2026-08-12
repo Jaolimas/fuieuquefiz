@@ -24,12 +24,13 @@ npx serve .
 
 ```
 fuieuquefiz/
-├── index.html              → Home (hero, seção "da floresta", destaques, sustentabilidade)
-├── catalogo.html            → Catálogo completo (20 peças, filtro por categoria, ordenação)
+├── index.html              → Home (hero, vitrine de peças em carrossel de scroll travado, destaques, sustentabilidade)
+├── catalogo.html            → Catálogo completo (15 peças, filtro por categoria, ordenação)
 ├── produto.html              → Página de detalhe de produto (?slug=... na URL)
 ├── sobre.html                → Nossa história / Nossa madeira / Processo / Trabalhe conosco
 ├── contato.html               → Fale com a gente / FAQ / Entrega e frete / Garantia
-├── checkout.html              → Checkout Transparente — Payment Brick embutido, sem sair do site
+├── checkout.html              → Checkout Transparente — Payment Brick (cartão + Pix) embutido, sem sair do site
+├── package.json                → Só declara "type": "module" (sintaxe ESM em api/*.js) — sem dependências, sem build step
 ├── data/
 │   └── products.json          → Fonte de verdade dos PREÇOS (usada só pelo backend para validar o total)
 ├── api/
@@ -40,27 +41,25 @@ fuieuquefiz/
 │   ├── tokens.css            → Única fonte de verdade para cores, tipografia, espaçamento
 │   ├── base.css               → Reset e defaults do documento
 │   ├── components.css          → Todos os componentes visuais (nav, footer, cards, botões, etc.)
-│   └── animations.css           → Reveal-on-scroll, morph de scroll, motion
+│   └── animations.css           → Reveal-on-scroll, carrossel de scroll travado, motion
 ├── js/
 │   ├── products.js             → Dados completos do catálogo (descrição, materiais, imagem, preço de exibição)
 │   ├── cart.js                 → Carrinho (localStorage) + checkout via WhatsApp — roda em toda página
 │   ├── main.js                  → Nav, menu mobile, reveal-on-scroll, scroll suave — roda em toda página
 │   ├── catalog.js               → Só em catalogo.html — grid filtrável/ordenável
 │   ├── product-page.js           → Só em produto.html — monta a página a partir do ?slug=
-│   ├── checkout-brick.js         → Só em checkout.html — monta o Payment Brick e envia pro backend
-│   └── scroll-morph.js            → Só em index.html — anima a seção "da floresta ao móvel"
+│   ├── checkout-brick.js         → Só em checkout.html — monta o Payment Brick (cartão + Pix) e envia pro backend
+│   └── scroll-morph.js            → Só em index.html — controla o carrossel de peças em destaque via scroll travado
 ├── assets/
-│   └── scroll-video/
-│       ├── anel-madeira.mp4        → Vídeo hero de rolagem (já gerado no Higgsfield)
-│       └── anel-madeira-poster.png → Poster/still do vídeo acima
-└── HIGGSFIELD_PROMPTS.md          → Prompts prontos para gerar as fotos e o vídeo reais no Higgsfield
+│   └── scroll-video/          → Vídeos de versões anteriores do hero (não usados hoje — hero agora é o carrossel de fotos em index.html); mantidos caso queiram reaproveitar em outra seção
+└── HIGGSFIELD_PROMPTS.md          → Prompts prontos usados para gerar as fotos reais dos produtos no Higgsfield
 ```
 
 Ordem de carregamento dos scripts, em todas as páginas: `products.js` → `cart.js` → `main.js` → script específico da página (se houver), todos com `defer`.
 
 ## Antes de vender de verdade
 
-O site está funcionalmente pronto, mas tem três coisas de conteúdo/config que **precisam** ser trocadas antes de divulgar o link para clientes reais:
+O site está funcionalmente pronto, mas ainda tem duas coisas de config que **precisam** ser trocadas antes de divulgar o link para clientes reais (fotografia dos produtos e vitrine do hero já estão feitas — itens (c) e (d) abaixo, mantidos como referência):
 
 ### (a) Número de WhatsApp placeholder
 
@@ -79,20 +78,15 @@ Dica: buscar por `5500000000000` em todos os arquivos do projeto (ex: `Ctrl+Shif
 
 `contato.html` usa `contato@fuieuquefiz.com.br` como e-mail de suporte (botão "Enviar e-mail", marcado com `TODO` no HTML). Troque pelo e-mail real de atendimento da loja.
 
-### (c) Fotografia real dos 20 produtos
+### (c) Fotografia real dos produtos — ✅ já feito
 
-Hoje cada produto usa um gradiente de CSS como placeholder (`.product-shot` + classes `.shot-grad-1` a `.shot-grad-6`, geradas por `getShotGradient()` em `js/products.js`), com o aviso "Prévia artística — fotos reais em breve" sobreposto.
+Os 15 produtos do catálogo (`js/products.js`) já usam foto real (`assets/products/SLUG.png`), sem placeholder de gradiente — `js/catalog.js` e `js/product-page.js` montam `<img>` direto a partir do campo `image` de cada produto (`productShotHTML()` em `js/products.js`). Pra trocar a foto de um produto, basta substituir o arquivo em `assets/products/` (mesmo nome) ou apontar o campo `image` pra outro arquivo — nada de código pra mexer.
 
-1. Use `HIGGSFIELD_PROMPTS.md` (Parte B) para gerar as 20 fotos no Higgsfield — um prompt por produto, já com o material e o estilo certos, extraídos de `js/products.js`.
-2. Salve as imagens finais em uma nova pasta `assets/products/`, nomeadas pelo `slug` de cada produto (ex: `assets/products/mesa-de-jantar-vigamestra.jpg`).
-3. Troque o placeholder por uma tag `<img>` real nos dois lugares onde ele é montado via JavaScript:
-   - `js/catalog.js`, função `buildCard()` (por volta da linha 34–43): o `innerHTML` monta `<div class="product-shot GRADIENTE"><span class="product-shot-mark">...` — troque o conteúdo interno da `div.product-shot` por `<img src="assets/products/' + product.slug + '.jpg" alt="' + product.name + '">` e remova a classe de gradiente e o `<span class="product-shot-mark">`/`<span class="product-shot-note">` (eles deixam de fazer sentido com foto real).
-   - `js/product-page.js`, função `render()` (bloco `.pdp-media`, por volta da linha 144–150) e função `renderRelated()` (por volta da linha 304–313): mesma troca — substituir o conteúdo da `div.product-shot` por uma `<img>` apontando para `assets/products/SLUG.jpg`.
-   - A classe `.product-shot` em si (sombra, `border-radius`, `overflow: hidden` — ver `css/components.css`) não precisa mudar: ela já foi desenhada para envolver tanto o placeholder de gradiente quanto uma `<img>` real (veja a regra `.product-shot img { width: 100%; height: 100%; object-fit: cover; }`, já presente em `components.css`).
+### (d) Vitrine de peças no hero (carrossel de scroll travado) — ✅ já feito
 
-### (d) Vídeo hero de rolagem — ✅ já feito
+A seção `#sob-a-luz` em `index.html` mostra um carrossel com 6 peças reais do catálogo (fotos de `assets/products/`), cada uma um link pra sua página de produto. `js/scroll-morph.js` pina a seção (`position: sticky`) e usa a posição do scroll dentro dela pra decidir qual `.morph-carousel-item` fica visível — mesmo mecanismo de "scroll travado" da versão anterior (que usava um vídeo único), só que agora dirigido por posição/índice de slide em vez de `video.currentTime`.
 
-A seção `#da-floresta` já usa um vídeo real gerado no Higgsfield (`assets/scroll-video/anel-madeira.mp4`, com `assets/scroll-video/anel-madeira-poster.png` como poster): uma bolacha de madeira cujos anéis se separam, giram e voltam ao normal, controlado por `video.currentTime` em `js/scroll-morph.js` conforme o usuário rola a página (para os dois lados). Ver `HIGGSFIELD_PROMPTS.md` (Parte A) para os prompts exatos usados e para instruções de como regenerar em maior resolução/duração para produção — o vídeo atual (720p, 6s) é uma boa prova de conceito, mas vale regerar em 1080p+ com `ffmpeg -movflags faststart` antes do lançamento final, para um scrubbing mais responsivo.
+Pra trocar quais peças aparecem (ou quantas), edite direto o HTML em `index.html` dentro de `#morph-carousel` — cada `<a class="morph-carousel-item">` tem `data-name`/`data-price` (usados pra montar a legenda) e a imagem/link do produto; não precisa tocar em `scroll-morph.js`. Os vídeos de versões anteriores do hero ficam em `assets/scroll-video/`, sem uso atualmente — ver `HIGGSFIELD_PROMPTS.md` (Parte A) se quiserem reaproveitar o conceito de vídeo em outro lugar do site.
 
 ## Como publicar (deploy)
 

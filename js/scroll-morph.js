@@ -1,21 +1,15 @@
 /* ==========================================================================
    FuiEuQueFiz — scroll-morph.js
-   Scroll-driven "revelação sob a luz" video: câmera 100% travada sobre a
-   mesa de jantar principal, começando quase no escuro e sendo revelada
-   progressivamente por uma luz quente que varre a peça (frame 0 = quase
-   no breu, frame final = peça totalmente iluminada, still de produto).
-   Não há "volta ao escuro" gravada no próprio vídeo — isso acontece porque
-   o scroll para cima simplesmente busca `currentTime` para trás na mesma
-   filmagem.
+   Carrossel de vitrine com "scroll travado": a seção fica pinada (position:
+   sticky) ocupando 100vh enquanto o usuário rola por uma faixa bem mais
+   alta (.morph-section), e a posição do scroll dentro dessa faixa decide
+   qual peça do carrossel está visível — cada trecho de rolagem equivale a
+   um slide, para frente ou para trás, sem nenhuma lógica separada por
+   direção (mesma matemática nos dois sentidos).
 
-   Scroll para baixo avança o vídeo, scroll para cima recua — o vídeo fica
-   pausado, e cada frame é escolhido diretamente por
-   `video.currentTime = progress * video.duration`, então ele naturalmente
-   "vai e volta" com a direção do scroll (mesma matemática nos dois sentidos,
-   sem lógica separada para ida/volta).
-
-   Vídeo gerado via Higgsfield (ver HIGGSFIELD_PROMPTS.md para o prompt
-   usado e como gerar variações). Fica em assets/scroll-video/mesa-reveal.mp4.
+   Cada slide é um <a class="morph-carousel-item"> com data-name/data-price,
+   usados para montar a legenda — trocar/reordenar peças é só editar o HTML
+   em index.html, sem tocar neste arquivo.
    ========================================================================== */
 
 (function () {
@@ -24,42 +18,42 @@
   var section = document.querySelector(".morph-section");
   if (!section) return;
 
-  var video = section.querySelector("#morph-video");
+  var carousel = section.querySelector("#morph-carousel");
   var caption = section.querySelector(".morph-caption");
   var progressFill = section.querySelector(".morph-progress-fill");
   var progressBar = section.querySelector(".morph-progress");
 
-  if (!video) return;
+  if (!carousel) return;
 
-  var CAPTIONS = [
-    { at: 0, text: "Um convite para olhar de perto." },
-    { at: 0.5, text: "Madeira maciça. Ferro forjado à mão. Sob encomenda, só para você." }
-  ];
+  var items = Array.prototype.slice.call(carousel.querySelectorAll(".morph-carousel-item"));
+  if (items.length === 0) return;
 
   var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  if (prefersReducedMotion) {
-    // Poster já é o still totalmente revelado/iluminado — usar a legenda final.
-    if (caption) caption.textContent = CAPTIONS[CAPTIONS.length - 1].text;
-    if (progressBar) progressBar.style.display = "none";
-    return;
-  }
-
-  var ticking = false;
-  var duration = 0;
-  var lastCaptionText = "";
 
   function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
   }
 
-  function captionForProgress(progress) {
-    var current = CAPTIONS[0].text;
-    for (var i = 0; i < CAPTIONS.length; i++) {
-      if (progress >= CAPTIONS[i].at) current = CAPTIONS[i].text;
+  function setActive(index) {
+    items.forEach(function (item, i) {
+      item.classList.toggle("is-active", i === index);
+    });
+    if (caption) {
+      var active = items[index];
+      caption.textContent = active.dataset.name + " — " + active.dataset.price;
     }
-    return current;
   }
+
+  if (prefersReducedMotion) {
+    // Sem scroll-jacking para quem prefere menos movimento — mostra a
+    // primeira peça, parada, sem barra de progresso.
+    setActive(0);
+    if (progressBar) progressBar.style.display = "none";
+    return;
+  }
+
+  var ticking = false;
+  var lastIndex = -1;
 
   function update() {
     ticking = false;
@@ -69,17 +63,11 @@
     var scrollableDistance = rect.height - viewportHeight;
 
     var progress = scrollableDistance > 0 ? clamp(-rect.top / scrollableDistance, 0, 1) : 0;
+    var index = clamp(Math.floor(progress * items.length), 0, items.length - 1);
 
-    if (duration > 0) {
-      video.currentTime = progress * duration;
-    }
-
-    if (caption) {
-      var text = captionForProgress(progress);
-      if (text !== lastCaptionText) {
-        caption.textContent = text;
-        lastCaptionText = text;
-      }
+    if (index !== lastIndex) {
+      setActive(index);
+      lastIndex = index;
     }
 
     if (progressFill) {
@@ -93,11 +81,6 @@
       ticking = true;
     }
   }
-
-  video.addEventListener("loadedmetadata", function () {
-    duration = video.duration || 0;
-    update();
-  });
 
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll, { passive: true });
