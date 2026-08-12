@@ -1,6 +1,6 @@
 /* ==========================================================================
    FuiEuQueFiz — catalog.js
-   Renders the 20-product grid on catalogo.html, with category filter pills
+   Renders the product grid on catalogo.html, with category filter pills
    and a sort <select>. Loaded after products.js and cart.js.
 
    Note on reveal-on-scroll: main.js wires its IntersectionObserver up to

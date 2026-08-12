@@ -1,48 +1,20 @@
 {
   "_comment": "Fonte de verdade dos PREÇOS para validação server-side (api/create-order.js). Mantida separada de js/products.js (que tem os dados completos de catálogo: descrição, materiais, imagem etc., usados só para exibição no navegador). Sempre que um preço mudar em js/products.js, atualize aqui também — não há build step que sincronize os dois automaticamente.",
   "products": [
-    { "slug": "mesa-de-jantar-vigamestra", "price": 8900, "sizeVariants": [
-      { "label": "6 lugares", "priceDelta": -1800 },
-      { "label": "8 lugares", "priceDelta": 0 },
-      { "label": "10 lugares", "priceDelta": 1600 }
-    ] },
-    { "slug": "mesa-de-centro-tronco-cru", "price": 3200 },
-    { "slug": "mesa-lateral-rebite", "price": 1450 },
-    { "slug": "cadeira-forja-alta", "price": 1290 },
-    { "slug": "cadeira-serraria", "price": 980 },
-    { "slug": "poltrona-fundicao", "price": 4100 },
-    { "slug": "banqueta-oficina", "price": 890 },
-    { "slug": "banco-trilho", "price": 2450 },
-    { "slug": "estante-andaime", "price": 5600 },
-    { "slug": "estante-container", "price": 6300 },
-    { "slug": "aparador-fabrica", "price": 3750 },
-    { "slug": "rack-painel-galpao", "price": 4950 },
-    { "slug": "cabeceira-trave", "price": 3100, "sizeVariants": [
-      { "label": "Queen (160cm)", "priceDelta": 0 },
-      { "label": "King (193cm)", "priceDelta": 450 }
-    ] },
-    { "slug": "escrivaninha-bancada", "price": 3400 },
-    { "slug": "bancada-de-bar-fundicao", "price": 7200 },
-    { "slug": "espelho-portal", "price": 1680 },
-    { "slug": "luminaria-pendente-farol", "price": 780 },
-    { "slug": "luminaria-de-chao-trilho", "price": 1150 },
-    { "slug": "mesa-de-apoio-dobradica", "price": 1320 },
-    { "slug": "poltrona-suspensa-corrente", "price": 3900 },
-    { "slug": "tabua-jarro-decorativa", "price": 420 },
-    { "slug": "relogio-fatia-de-tronco", "price": 890 },
-    { "slug": "adega-galho-de-arvore", "price": 650 },
-    { "slug": "console-prateleira-aberta", "price": 1980 },
-    { "slug": "console-estreito-industrial", "price": 1650 },
     { "slug": "mesa-de-centro-com-lareira", "price": 4900 },
-    { "slug": "banco-industrial-chevron", "price": 2200 },
-    { "slug": "trio-de-pedestais", "price": 980 },
     { "slug": "par-mesas-fatia-de-tronco", "price": 1780 },
     { "slug": "banco-ferro-a", "price": 1450 },
+    { "slug": "banco-patio-ripado", "price": 1680 },
+    { "slug": "banco-duo-mesa-central", "price": 3400 },
+    { "slug": "estante-assimetrica-cubos", "price": 4200 },
     { "slug": "estante-modular-geometrica", "price": 3600 },
     { "slug": "rack-ripas-verticais", "price": 2950 },
-    { "slug": "banco-patio-ripado", "price": 1680 },
-    { "slug": "aparador-bar-escada", "price": 3450 },
-    { "slug": "estante-assimetrica-cubos", "price": 4200 },
-    { "slug": "cristaleira-prateleira-escada", "price": 3900 }
+    { "slug": "console-prateleira-aberta", "price": 1980 },
+    { "slug": "console-tronco-bruto", "price": 2650 },
+    { "slug": "cristaleira-prateleira-escada", "price": 3900 },
+    { "slug": "trio-de-pedestais", "price": 980 },
+    { "slug": "adega-galho-de-arvore", "price": 650 },
+    { "slug": "adega-parede-fatia-tronco", "price": 780 },
+    { "slug": "espelho-fatia-de-tronco", "price": 1450 }
   ]
 }
