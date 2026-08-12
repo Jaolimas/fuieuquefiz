@@ -1,17 +1,23 @@
 /* ==========================================================================
    FuiEuQueFiz — checkout-brick.js
    Monta o Payment Brick (Checkout Transparente) do Mercado Pago dentro de
-   checkout.html — o cliente preenche cartão sem sair do site. Só roda em
-   checkout.html (procura #payment-brick-container; se não achar, sai).
+   checkout.html — o cliente paga com cartão ou Pix sem sair do site. Só
+   roda em checkout.html (procura #payment-brick-container; se não achar,
+   sai).
 
    Fluxo:
    1. Lê o carrinho (window.Cart.getItems()), mostra resumo + total.
    2. Busca a Public Key em /api/public-config (nunca hardcoded aqui).
-   3. Monta o Brick (cartão de crédito/débito, parcelamento até 12x).
-   4. No onSubmit, envia o token + itens do carrinho pro backend
-      (/api/create-order), que recalcula o total e cria a cobrança de
-      verdade — o valor mostrado aqui é só para exibição, quem manda é o
-      servidor.
+   3. Monta o Brick (cartão de crédito/débito com parcelamento até 12x, e
+      Pix via customization.paymentMethods.bankTransfer).
+   4. No onSubmit, envia o token (cartão) ou só o payment_method_id "pix"
+      + itens do carrinho pro backend (/api/create-order), que recalcula
+      o total e cria a cobrança de verdade — o valor mostrado aqui é só
+      para exibição, quem manda é o servidor.
+   5. Cartão aprova na hora (status "approved"). Pix não — o backend
+      devolve status "in_process" + os dados do QR Code/copia-e-cola
+      (payload.result.pix), exibidos por showPix(); a confirmação real do
+      pagamento chega depois, de forma assíncrona, via api/webhook.js.
    ========================================================================== */
 
 (function () {
@@ -25,6 +31,10 @@
   var summaryLinesEl = document.getElementById("checkout-summary-lines");
   var totalEl = document.getElementById("checkout-total");
   var resultEl = document.getElementById("checkout-result");
+  var pixEl = document.getElementById("checkout-pix");
+  var pixQrEl = document.getElementById("checkout-pix-qr");
+  var pixCodeEl = document.getElementById("checkout-pix-code");
+  var pixCopyBtn = document.getElementById("checkout-pix-copy");
 
   function escapeHtml(str) {
     var div = document.createElement("div");
@@ -38,6 +48,32 @@
     resultEl.textContent = message;
     resultEl.hidden = false;
     resultEl.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  /* Mostra o QR Code + código copia-e-cola do Pix (chamado além de
+     showResult — o Pix não aprova na hora, então o cliente precisa dessas
+     informações pra concluir o pagamento pelo app do banco). */
+  function showPix(pix) {
+    if (!pixEl || !pix || !pix.qrCode) return;
+
+    if (pixQrEl && pix.qrCodeBase64) {
+      pixQrEl.src = "data:image/png;base64," + pix.qrCodeBase64;
+    }
+    if (pixCodeEl) pixCodeEl.textContent = pix.qrCode;
+
+    pixEl.hidden = false;
+    pixEl.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  if (pixCopyBtn) {
+    pixCopyBtn.addEventListener("click", function () {
+      if (!pixCodeEl || !pixCodeEl.textContent) return;
+      navigator.clipboard.writeText(pixCodeEl.textContent).then(function () {
+        var originalText = "Copiar código";
+        pixCopyBtn.textContent = "Copiado ✓";
+        window.setTimeout(function () { pixCopyBtn.textContent = originalText; }, 1500);
+      });
+    });
   }
 
   /* ------------------------------------------------------------------
@@ -107,6 +143,7 @@
         paymentMethods: {
           creditCard: "all",
           debitCard: "all",
+          bankTransfer: "all", /* Pix */
           minInstallments: 1,
           maxInstallments: 12
         },
@@ -131,8 +168,10 @@
           console.error("Payment Brick error:", error);
         },
         onSubmit: function (data) {
-          var paymentType = data.paymentMethod; /* 'credit_card' | 'debit_card' */
+          var paymentType = data.paymentMethod; /* 'credit_card' | 'debit_card' | 'bank_transfer' (Pix) */
           var formData = data.formData;
+
+          if (pixEl) pixEl.hidden = true; /* limpa QR de uma tentativa anterior, se houver */
 
           return new Promise(function (resolve, reject) {
             var deviceId = window.MP_DEVICE_SESSION_ID || "";
@@ -175,6 +214,7 @@
                   if (window.Cart && window.Cart.clear) window.Cart.clear();
                 } else if (status === "in_process") {
                   showResult("pending", payload.result.message || "Pagamento em análise — assim que for confirmado, avisamos você.");
+                  if (payload.result.pix) showPix(payload.result.pix);
                   if (window.Cart && window.Cart.clear) window.Cart.clear();
                 } else {
                   showResult("rejected", payload.result.message || "Pagamento recusado.");

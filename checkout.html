@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pagamento — FuiEuQueFiz</title>
-  <meta name="description" content="Finalize o pagamento das suas peças FuiEuQueFiz com cartão de crédito ou débito, sem sair do site.">
+  <meta name="description" content="Finalize o pagamento das suas peças FuiEuQueFiz com cartão de crédito, débito ou Pix, sem sair do site.">
   <meta name="robots" content="noindex">
   <link rel="icon" href="assets/logo.jpg">
 
@@ -64,7 +64,7 @@
     <section class="section" aria-label="Pagamento">
       <div class="container-grid">
         <h1 class="reveal">Pagamento</h1>
-        <p class="lead reveal" style="margin-bottom: var(--space-2xl);">Preencha os dados do cartão abaixo — você não sai do site em nenhum momento.</p>
+        <p class="lead reveal" style="margin-bottom: var(--space-2xl);">Pague com cartão ou Pix abaixo — você não sai do site em nenhum momento.</p>
 
         <div id="checkout-empty" class="checkout-empty" hidden>
           <p class="content-body">Sua lista está vazia.</p>
@@ -84,6 +84,14 @@
 
           <div class="checkout-brick-col">
             <div id="checkout-result" class="checkout-result" hidden></div>
+            <div id="checkout-pix" class="checkout-pix" hidden>
+              <img id="checkout-pix-qr" class="checkout-pix-qr" alt="QR Code para pagamento via Pix">
+              <p class="checkout-pix-hint">Escaneie o QR Code com o app do seu banco, ou copie o código Pix abaixo:</p>
+              <div class="checkout-pix-code-row">
+                <code id="checkout-pix-code" class="checkout-pix-code"></code>
+                <button type="button" id="checkout-pix-copy" class="btn btn--ghost">Copiar código</button>
+              </div>
+            </div>
             <div id="payment-brick-container"></div>
           </div>
         </div>

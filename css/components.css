@@ -1328,6 +1328,52 @@
   border: 1px solid var(--color-action);
 }
 
+.checkout-pix {
+  background: var(--color-canvas-alt);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  text-align: center;
+}
+
+.checkout-pix-qr {
+  width: 220px;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: var(--space-sm);
+  margin: 0 auto var(--space-md);
+  display: block;
+}
+
+.checkout-pix-hint {
+  font-size: var(--text-caption);
+  color: var(--color-ink-80);
+  margin-bottom: var(--space-md);
+}
+
+.checkout-pix-code-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.checkout-pix-code {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  font-size: var(--text-caption);
+  color: var(--color-ink-48);
+  background: var(--color-canvas);
+  border: var(--border-hairline);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+}
+
 /* ==========================================================================
    Sobre & Contato — shared long-form content typography
    Composed entirely from existing tokens (see tokens.css) — no new hex.

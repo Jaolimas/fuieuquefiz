@@ -1,10 +1,16 @@
 /* ==========================================================================
    FuiEuQueFiz — /api/create-order
    Vercel Serverless Function (Node.js runtime). Recebe o token de cartão
-   gerado pelo Payment Brick (checkout.html / js/checkout-brick.js) e cria
-   a cobrança usando a API de Orders do Mercado Pago (endpoint atual
-   recomendado pela documentação oficial em 2026 — POST /v1/orders — não
-   a API legada /v1/payments).
+   (ou, no caso de Pix, só o payment_method_id "pix") gerado pelo Payment
+   Brick (checkout.html / js/checkout-brick.js) e cria a cobrança usando a
+   API de Orders do Mercado Pago (endpoint atual recomendado pela
+   documentação oficial em 2026 — POST /v1/orders — não a API legada
+   /v1/payments).
+
+   Pix é assíncrono: a resposta desta função já traz o QR Code/copia-e-cola
+   (campo `pix` — só presente quando `isPix` e a Mercado Pago devolveu
+   `qr_code`), mas o pagamento só é confirmado de fato depois, quando o
+   cliente paga pelo app do banco — a confirmação chega via api/webhook.js.
 
    Variáveis de ambiente necessárias (Vercel → Environment Variables):
      MP_ACCESS_TOKEN — Access Token secreto (mesmo já usado antes).
@@ -44,7 +50,8 @@ const STATUS_DETAIL_MESSAGES = {
   cc_rejected_other_reason: "Seu banco recusou o pagamento sem detalhar o motivo. Tente outro cartão ou finalize pelo WhatsApp.",
   pending_contingency: "Estamos processando seu pagamento — pode levar alguns minutos.",
   pending_review_manual: "Seu pagamento está em análise manual. Avisamos assim que houver novidade.",
-  processing_error: "Não conseguimos processar esse cartão agora. Confira os dados ou tente outro cartão — se persistir, finalize pelo WhatsApp."
+  processing_error: "Não conseguimos processar esse cartão agora. Confira os dados ou tente outro cartão — se persistir, finalize pelo WhatsApp.",
+  waiting_transfer: "Escaneie o QR Code ou copie o código Pix abaixo para concluir o pagamento."
 };
 
 /* ==========================================================================
@@ -134,12 +141,17 @@ export default async function handler(req, res) {
 
   const items = Array.isArray(body && body.items) ? body.items : [];
   const formData = body && body.formData;
-  const paymentType = body && body.paymentType; /* 'credit_card' | 'debit_card', vem do Brick */
+  const paymentType = body && body.paymentType; /* 'credit_card' | 'debit_card' | 'bank_transfer' (Pix), vem do Brick */
+  const isPix = paymentType === "bank_transfer" || (formData && formData.payment_method_id === "pix");
 
   if (items.length === 0) {
     return res.status(400).json({ message: "Carrinho vazio." });
   }
-  if (!formData || !formData.token || !formData.payment_method_id) {
+  if (!formData || !formData.payment_method_id) {
+    return res.status(400).json({ message: "Dados do pagamento incompletos." });
+  }
+  /* Cartão precisa do token gerado pelo Brick; Pix não (não tokeniza cartão). */
+  if (!isPix && !formData.token) {
     return res.status(400).json({ message: "Dados do pagamento incompletos." });
   }
 
@@ -157,6 +169,18 @@ export default async function handler(req, res) {
 
   const deviceId = req.headers["x-meli-session-id"] || "";
 
+  /* Pix (payment_method.id "pix", type "bank_transfer") não usa token nem
+     parcelas — só cartão tem esses campos na API de Orders. */
+  const paymentMethodBody = isPix
+    ? { id: "pix", type: "bank_transfer" }
+    : {
+        id: formData.payment_method_id,
+        type: paymentType || "credit_card",
+        token: formData.token,
+        installments: formData.installments || 1,
+        statement_descriptor: "FUIEUQUEFIZ"
+      };
+
   const orderBody = {
     type: "online",
     processing_mode: "automatic",
@@ -170,13 +194,7 @@ export default async function handler(req, res) {
       payments: [
         {
           amount: totalAmount.toFixed(2),
-          payment_method: {
-            id: formData.payment_method_id,
-            type: paymentType || "credit_card",
-            token: formData.token,
-            installments: formData.installments || 1,
-            statement_descriptor: "FUIEUQUEFIZ"
-          }
+          payment_method: paymentMethodBody
         }
       ]
     }
@@ -213,14 +231,27 @@ export default async function handler(req, res) {
     const statusDetail = payment && payment.status_detail;
     const category = categorizeStatus(status);
 
-    console.log("Order criada:", { orderId: data.id, status, statusDetail, category });
+    console.log("Order criada:", { orderId: data.id, status, statusDetail, category, isPix });
+
+    /* Pix aprovado só depois que o cliente paga de verdade (assíncrono) — a
+       resposta da criação da order traz o QR Code/copia-e-cola pro cliente
+       pagar; a confirmação em si chega depois via api/webhook.js. */
+    const pixPaymentMethod = payment && payment.payment_method;
+    const pix = (isPix && pixPaymentMethod && pixPaymentMethod.qr_code)
+      ? {
+          qrCode: pixPaymentMethod.qr_code,
+          qrCodeBase64: pixPaymentMethod.qr_code_base64,
+          ticketUrl: pixPaymentMethod.ticket_url
+        }
+      : null;
 
     /* js/checkout-brick.js só reconhece "approved"/"in_process" — traduzimos
        o status cru da API de Orders (processed/created/processing/failed/
        etc.) pra esse vocabulário aqui, uma vez só. */
     return res.status(200).json({
       status: category === "approved" ? "approved" : category === "pending" ? "in_process" : "rejected",
-      message: friendlyMessage(category, statusDetail)
+      message: friendlyMessage(category, statusDetail),
+      pix: pix
     });
   } catch (err) {
     console.error("Falha ao chamar a API do Mercado Pago:", err.message);
