@@ -176,7 +176,10 @@ export default async function handler(req, res) {
          que está errado na NOSSA requisição — não inclui dado de cartão)
          porque o formato de erro da API de Orders não é o mesmo da API
          antiga (nem sempre tem `.message`/`.cause` no nível raiz). */
-      console.error("Mercado Pago Orders API error:", { status: mpRes.status, body: data });
+      /* JSON.stringify (não console.error com objeto aninhado) porque o
+         log da Vercel trunca objetos em profundidade 2 ("[Object]"),
+         escondendo justamente o array `errors[]` que tem o motivo real. */
+      console.error("Mercado Pago Orders API error: status=" + mpRes.status + " body=" + JSON.stringify(data));
       return res.status(502).json({ message: "Não foi possível processar o pagamento. Tente novamente ou finalize pelo WhatsApp." });
     }
 
