@@ -43,13 +43,39 @@ const STATUS_DETAIL_MESSAGES = {
   cc_rejected_blacklist: "O pagamento não foi autorizado. Tente outro cartão ou finalize pelo WhatsApp.",
   cc_rejected_other_reason: "Seu banco recusou o pagamento sem detalhar o motivo. Tente outro cartão ou finalize pelo WhatsApp.",
   pending_contingency: "Estamos processando seu pagamento — pode levar alguns minutos.",
-  pending_review_manual: "Seu pagamento está em análise manual. Avisamos assim que houver novidade."
+  pending_review_manual: "Seu pagamento está em análise manual. Avisamos assim que houver novidade.",
+  processing_error: "Não conseguimos processar esse cartão agora. Confira os dados ou tente outro cartão — se persistir, finalize pelo WhatsApp."
 };
 
-function friendlyMessage(status, statusDetail) {
+/* ==========================================================================
+   A API de Orders usa um vocabulário de status DIFERENTE da API antiga de
+   pagamentos (que usava approved/in_process/rejected direto). Tanto o
+   `status` da order quanto o de transactions.payments[] vêm como
+   created/processing/action_required/processed/canceled/expired/failed/
+   charged_back/refunded — por isso normalizamos pra approved/pending/
+   rejected aqui, uma vez só, em vez de espalhar esse mapeamento pelo
+   front (js/checkout-brick.js continua checando só "approved"/"in_process").
+   ========================================================================== */
+const ORDER_STATUS_CATEGORY = {
+  processed: "approved",
+  created: "pending",
+  processing: "pending",
+  action_required: "pending",
+  charged_back: "pending",
+  canceled: "rejected",
+  expired: "rejected",
+  failed: "rejected",
+  refunded: "rejected"
+};
+
+function categorizeStatus(status) {
+  return ORDER_STATUS_CATEGORY[status] || "rejected";
+}
+
+function friendlyMessage(category, statusDetail) {
   if (STATUS_DETAIL_MESSAGES[statusDetail]) return STATUS_DETAIL_MESSAGES[statusDetail];
-  if (status === "approved") return "Pagamento aprovado!";
-  if (status === "in_process") return "Pagamento em análise. Avisamos assim que houver novidade.";
+  if (category === "approved") return "Pagamento aprovado!";
+  if (category === "pending") return "Pagamento em análise. Avisamos assim que houver novidade.";
   return "Pagamento recusado. Tente outro cartão ou finalize pelo WhatsApp.";
 }
 
@@ -185,12 +211,16 @@ export default async function handler(req, res) {
     const payment = data.transactions && data.transactions.payments && data.transactions.payments[0];
     const status = (payment && payment.status) || data.status;
     const statusDetail = payment && payment.status_detail;
+    const category = categorizeStatus(status);
 
-    console.log("Order criada:", { orderId: data.id, status, statusDetail });
+    console.log("Order criada:", { orderId: data.id, status, statusDetail, category });
 
+    /* js/checkout-brick.js só reconhece "approved"/"in_process" — traduzimos
+       o status cru da API de Orders (processed/created/processing/failed/
+       etc.) pra esse vocabulário aqui, uma vez só. */
     return res.status(200).json({
-      status: status,
-      message: friendlyMessage(status, statusDetail)
+      status: category === "approved" ? "approved" : category === "pending" ? "in_process" : "rejected",
+      message: friendlyMessage(category, statusDetail)
     });
   } catch (err) {
     console.error("Falha ao chamar a API do Mercado Pago:", err.message);
