@@ -139,19 +139,22 @@
   opacity: 0;
   transition: opacity 700ms var(--ease);
   background: url("../assets/fundo.avif") center center / cover no-repeat;
-  /* Três círculos pequenos, cada um "flutuando" ao redor do cursor com seu
-     próprio raio/fase (--blob2-*/--blob3-*, calculados a cada frame em
-     js/main.js) — a união deles (mask-image com múltiplas camadas soma as
-     áreas por padrão) forma uma mancha orgânica que muda de forma como uma
-     ameba, em vez de um círculo perfeito parado. */
+  /* Rastro de 4 pontos encadeados (--trail1..4-*, calculados a cada frame
+     em js/main.js — cada um persegue o anterior com seu próprio atraso).
+     Raio um pouco maior + só o stop 0%/100% (sem stop intermediário) =
+     a transição de opaco pra transparente fica esticada por mais pixels,
+     então a borda não fica perceptível; cada camada mais pra trás no
+     rastro entra com uma alpha menor, então o rastro vai sumindo. */
   -webkit-mask-image:
-    radial-gradient(circle 42px at var(--cursor-x, -9999px) var(--cursor-y, -9999px), #000 0%, transparent 100%),
-    radial-gradient(circle 30px at var(--blob2-x, -9999px) var(--blob2-y, -9999px), #000 0%, transparent 100%),
-    radial-gradient(circle 26px at var(--blob3-x, -9999px) var(--blob3-y, -9999px), #000 0%, transparent 100%);
+    radial-gradient(circle 76px at var(--trail1-x, -9999px) var(--trail1-y, -9999px), rgba(0, 0, 0, 0.95) 0%, transparent 100%),
+    radial-gradient(circle 64px at var(--trail2-x, -9999px) var(--trail2-y, -9999px), rgba(0, 0, 0, 0.55) 0%, transparent 100%),
+    radial-gradient(circle 52px at var(--trail3-x, -9999px) var(--trail3-y, -9999px), rgba(0, 0, 0, 0.32) 0%, transparent 100%),
+    radial-gradient(circle 40px at var(--trail4-x, -9999px) var(--trail4-y, -9999px), rgba(0, 0, 0, 0.16) 0%, transparent 100%);
   mask-image:
-    radial-gradient(circle 42px at var(--cursor-x, -9999px) var(--cursor-y, -9999px), #000 0%, transparent 100%),
-    radial-gradient(circle 30px at var(--blob2-x, -9999px) var(--blob2-y, -9999px), #000 0%, transparent 100%),
-    radial-gradient(circle 26px at var(--blob3-x, -9999px) var(--blob3-y, -9999px), #000 0%, transparent 100%);
+    radial-gradient(circle 76px at var(--trail1-x, -9999px) var(--trail1-y, -9999px), rgba(0, 0, 0, 0.95) 0%, transparent 100%),
+    radial-gradient(circle 64px at var(--trail2-x, -9999px) var(--trail2-y, -9999px), rgba(0, 0, 0, 0.55) 0%, transparent 100%),
+    radial-gradient(circle 52px at var(--trail3-x, -9999px) var(--trail3-y, -9999px), rgba(0, 0, 0, 0.32) 0%, transparent 100%),
+    radial-gradient(circle 40px at var(--trail4-x, -9999px) var(--trail4-y, -9999px), rgba(0, 0, 0, 0.16) 0%, transparent 100%);
 }
 
 body.wood-reveal-active #wood-reveal {
