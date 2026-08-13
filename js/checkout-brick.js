@@ -44,10 +44,44 @@
   var receiptEl = document.getElementById("checkout-receipt");
   var receiptLinesEl = document.getElementById("checkout-receipt-lines");
   var receiptTotalEl = document.getElementById("checkout-receipt-total");
+  var receiptPaymentEl = document.getElementById("checkout-receipt-payment");
   var receiptForm = document.getElementById("checkout-receipt-form");
   var receiptEmailInput = document.getElementById("checkout-receipt-email");
   var receiptSendBtn = document.getElementById("checkout-receipt-send-btn");
   var receiptStatusEl = document.getElementById("checkout-receipt-status");
+
+  var currentPaymentLabel = ""; /* preenchido por showReceipt(), lido no envio do e-mail */
+
+  var CARD_BRAND_LABELS = {
+    visa: "Visa",
+    master: "Mastercard",
+    amex: "American Express",
+    elo: "Elo",
+    hipercard: "Hipercard",
+    diners: "Diners Club",
+    discover: "Discover",
+    naranja: "Naranja",
+    cabal: "Cabal"
+  };
+
+  /* Monta "Cartão de crédito (Mastercard) em 3x" / "Cartão de débito (Visa)"
+     / "Pix" a partir do que o Brick devolveu no onSubmit — só descritivo
+     (o valor cobrado de verdade já foi validado à parte, no servidor). */
+  function paymentMethodLabel(paymentType, formData) {
+    if (paymentType === "bank_transfer") return "Pix";
+
+    var brandId = formData && formData.payment_method_id;
+    var brand = CARD_BRAND_LABELS[brandId] || brandId || "";
+    var kind = paymentType === "debit_card" ? "Cartão de débito" : "Cartão de crédito";
+    var label = kind + (brand ? " (" + brand + ")" : "");
+
+    var installments = formData && parseInt(formData.installments, 10);
+    if (paymentType === "credit_card" && installments > 1) {
+      label += " em " + installments + "x";
+    }
+
+    return label;
+  }
 
   function escapeHtml(str) {
     var div = document.createElement("div");
@@ -126,10 +160,12 @@
      receber por e-mail (chamado depois que a order é criada com
      sucesso, aprovada na hora ou Pix aguardando pagamento).
      ------------------------------------------------------------------ */
-  function showReceipt() {
+  function showReceipt(paymentLabel) {
     if (!receiptEl) return;
+    currentPaymentLabel = paymentLabel || "";
     if (receiptLinesEl) receiptLinesEl.innerHTML = summaryLinesHtml(items);
     if (receiptTotalEl) receiptTotalEl.textContent = formatBRL(total);
+    if (receiptPaymentEl) receiptPaymentEl.textContent = currentPaymentLabel;
     receiptEl.hidden = false;
   }
 
@@ -155,6 +191,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: email,
+          paymentLabel: currentPaymentLabel,
           items: items.map(function (item) {
             return {
               slug: item.slug,
@@ -294,14 +331,15 @@
                 }
 
                 var status = payload.result.status;
+                var paymentLabel = paymentMethodLabel(paymentType, formData);
                 if (status === "approved") {
                   showResult("approved", payload.result.message || "Pagamento aprovado! Nossa equipe entra em contato pelo WhatsApp para combinar prazo e frete.");
-                  showReceipt();
+                  showReceipt(paymentLabel);
                   if (window.Cart && window.Cart.clear) window.Cart.clear();
                 } else if (status === "in_process") {
                   showResult("pending", payload.result.message || "Pagamento em análise — assim que for confirmado, avisamos você.");
                   if (payload.result.pix) showPix(payload.result.pix);
-                  showReceipt();
+                  showReceipt(paymentLabel);
                   if (window.Cart && window.Cart.clear) window.Cart.clear();
                 } else {
                   showResult("rejected", payload.result.message || "Pagamento recusado.");

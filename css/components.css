@@ -1384,6 +1384,12 @@
   margin-bottom: var(--space-md);
 }
 
+.checkout-receipt-payment {
+  font-size: var(--text-caption);
+  color: var(--color-ink-80);
+  margin-top: var(--space-sm);
+}
+
 .checkout-receipt-form {
   margin-top: var(--space-lg);
   padding-top: var(--space-md);

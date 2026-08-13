@@ -18,7 +18,9 @@
 
    Segurança: assim como em create-order.js, o total e o preço de cada
    item são SEMPRE recalculados a partir de data/products.json — o e-mail
-   nunca reflete um valor que o navegador tenha mandado.
+   nunca reflete um valor que o navegador tenha mandado. `paymentLabel`
+   (ex: "Cartão de crédito (Mastercard) em 3x") é só descritivo — não
+   afeta o cálculo, por isso não precisa da mesma validação de preço.
    ========================================================================== */
 
 import { readFileSync } from "node:fs";
@@ -78,7 +80,7 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
-function buildReceiptHtml(lines, total) {
+function buildReceiptHtml(lines, total, paymentLabel) {
   const rows = lines.map(function (line) {
     return (
       '<tr>' +
@@ -102,6 +104,7 @@ function buildReceiptHtml(lines, total) {
           '<td style="padding:14px 0 0;font-weight:bold;text-align:right;">' + formatBRL(total) + '</td>' +
         '</tr>' +
       '</table>' +
+      (paymentLabel ? '<p style="color:#4A4038;font-size:13px;margin-top:16px;">Forma de pagamento: ' + escapeHtml(paymentLabel) + '</p>' : '') +
     '</div>'
   );
 }
@@ -129,6 +132,10 @@ export default async function handler(req, res) {
 
   const email = body && typeof body.email === "string" ? body.email.trim() : "";
   const items = Array.isArray(body && body.items) ? body.items : [];
+  /* Só descritivo (ex: "Cartão de crédito (Mastercard) em 3x") — o valor
+     cobrado já foi validado à parte, em create-order.js. Trunca porque
+     esse endpoint é público; nada além de escapeHtml() confia nesse texto. */
+  const paymentLabel = body && typeof body.paymentLabel === "string" ? body.paymentLabel.trim().slice(0, 80) : "";
 
   if (!EMAIL_RE.test(email)) {
     return res.status(400).json({ message: "Digite um e-mail válido." });
@@ -158,7 +165,7 @@ export default async function handler(req, res) {
         from: from,
         to: [email],
         subject: "Seu pedido FuiEuQueFiz",
-        html: buildReceiptHtml(lines, total)
+        html: buildReceiptHtml(lines, total, paymentLabel)
       })
     });
 
