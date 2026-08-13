@@ -11,12 +11,10 @@
   /* ------------------------------------------------------------------
      Cursor wood reveal — camada decorativa fixa injetada em toda página,
      com a foto assets/fundo.avif (madeira rústica) escondida atrás do
-     fundo atual, revelada perto do cursor com um leve rastro: 4 pontos
-     encadeados, cada um perseguindo o anterior com seu próprio atraso
-     (p1 persegue o mouse, p2 persegue p1, p3 persegue p2, p4 persegue
-     p3) — durante o movimento eles se espalham formando um rastro que
-     vai desaparecendo; parado, convergem numa mancha só. pointer-events
-     :none o tempo todo, então nunca atrapalha cliques.
+     fundo atual, revelada num círculo que segue o cursor com um pouco de
+     atraso (lerp a cada frame, em vez de pular direto pra posição real —
+     fica bem mais "smooth"). pointer-events:none o tempo todo, então
+     nunca atrapalha cliques.
 
      Fica discreta (opacidade bem baixa, ver css/animations.css) sempre
      que o elemento embaixo do cursor tem conteúdo de verdade — foto,
@@ -31,12 +29,8 @@
 
     var targetX = 0;
     var targetY = 0;
-    var trail = [
-      { x: 0, y: 0, ease: 0.28 },
-      { x: 0, y: 0, ease: 0.2 },
-      { x: 0, y: 0, ease: 0.15 },
-      { x: 0, y: 0, ease: 0.11 }
-    ];
+    var smoothX = 0;
+    var smoothY = 0;
     var cursorLoopRunning = false;
 
     var CONTENT_TAGS = { IMG: 1, SVG: 1, BUTTON: 1, INPUT: 1, A: 1, SELECT: 1, TEXTAREA: 1 };
@@ -54,22 +48,31 @@
       return false;
     };
 
-    var cursorTick = function () {
-      var leaderX = targetX;
-      var leaderY = targetY;
+    var cursorTick = function (time) {
+      /* Suaviza a posição em vez de seguir o mouse 1:1 — a mancha "desliza"
+         atrás do cursor com um pequeno atraso. */
+      smoothX += (targetX - smoothX) * 0.12;
+      smoothY += (targetY - smoothY) * 0.12;
+
+      /* Dois círculos extras orbitando o centro em frequências/fases
+         diferentes — a união deles com o círculo principal (ver
+         css/animations.css) muda de forma continuamente, como uma ameba,
+         em vez de ficar um círculo parado. */
+      var t = time || performance.now();
+      var blob2X = smoothX + Math.cos(t * 0.00055) * 24;
+      var blob2Y = smoothY + Math.sin(t * 0.0008 + 1.3) * 18;
+      var blob3X = smoothX + Math.cos(t * 0.0011 + 3.1) * 18;
+      var blob3Y = smoothY + Math.sin(t * 0.0007 + 4.7) * 22;
+
       var rootStyle = document.documentElement.style;
+      rootStyle.setProperty("--cursor-x", smoothX + "px");
+      rootStyle.setProperty("--cursor-y", smoothY + "px");
+      rootStyle.setProperty("--blob2-x", blob2X + "px");
+      rootStyle.setProperty("--blob2-y", blob2Y + "px");
+      rootStyle.setProperty("--blob3-x", blob3X + "px");
+      rootStyle.setProperty("--blob3-y", blob3Y + "px");
 
-      for (var i = 0; i < trail.length; i++) {
-        var point = trail[i];
-        point.x += (leaderX - point.x) * point.ease;
-        point.y += (leaderY - point.y) * point.ease;
-        rootStyle.setProperty("--trail" + (i + 1) + "-x", point.x + "px");
-        rootStyle.setProperty("--trail" + (i + 1) + "-y", point.y + "px");
-        leaderX = point.x;
-        leaderY = point.y;
-      }
-
-      var elUnderCursor = document.elementFromPoint(trail[0].x, trail[0].y);
+      var elUnderCursor = document.elementFromPoint(smoothX, smoothY);
       document.body.classList.toggle("wood-reveal-discreet", isOverContent(elUnderCursor));
 
       if (cursorLoopRunning) window.requestAnimationFrame(cursorTick);
@@ -83,10 +86,8 @@
         document.body.classList.add("wood-reveal-active");
         if (!cursorLoopRunning) {
           cursorLoopRunning = true;
-          for (var i = 0; i < trail.length; i++) {
-            trail[i].x = targetX;
-            trail[i].y = targetY;
-          }
+          smoothX = targetX;
+          smoothY = targetY;
           window.requestAnimationFrame(cursorTick);
         }
       },
