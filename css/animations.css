@@ -125,6 +125,47 @@
 }
 
 /* ==========================================================================
+   Cursor wood reveal — madeira rústica escondida atrás do fundo do site,
+   revelada num círculo em torno do cursor enquanto o mouse se move pela
+   página (elemento injetado por js/main.js). Puramente decorativo:
+   pointer-events:none sempre, e nem é criado quando prefers-reduced-motion.
+   ========================================================================== */
+
+#wood-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 450ms var(--ease);
+  /* Cores translúcidas diretas (não mix-blend-mode) para que a madeira
+     apareça de forma consistente tanto sobre seções claras quanto escuras
+     — overlay/multiply somem quase por completo sobre o fundo claro
+     (--color-canvas), que é a maior parte do site. */
+  background:
+    repeating-linear-gradient(
+      91deg,
+      rgba(58, 46, 34, 0.55) 0px,
+      rgba(92, 70, 48, 0.5) 5px,
+      rgba(107, 74, 48, 0.45) 11px,
+      rgba(58, 46, 34, 0.55) 17px,
+      rgba(92, 70, 48, 0.5) 24px
+    ),
+    repeating-radial-gradient(
+      ellipse 360px 160px at 22% 32%,
+      rgba(217, 121, 63, 0.3) 0px,
+      transparent 100px,
+      transparent 240px
+    );
+  -webkit-mask-image: radial-gradient(circle 220px at var(--cursor-x, -9999px) var(--cursor-y, -9999px), #000 0%, transparent 100%);
+  mask-image: radial-gradient(circle 220px at var(--cursor-x, -9999px) var(--cursor-y, -9999px), #000 0%, transparent 100%);
+}
+
+body.wood-reveal-active #wood-reveal {
+  opacity: 1;
+}
+
+/* ==========================================================================
    Reduced motion
    ========================================================================== */
 
@@ -145,5 +186,10 @@
 
   .scroll-cue {
     animation: none !important;
+  }
+
+  #wood-reveal,
+  .checkout-wood-warp {
+    display: none !important;
   }
 }

@@ -9,6 +9,49 @@
   var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ------------------------------------------------------------------
+     Cursor wood reveal — camada decorativa fixa injetada em toda página,
+     com uma textura de madeira rústica escondida atrás do fundo atual.
+     O mousemove só atualiza --cursor-x/--cursor-y (custom properties lidas
+     pelo mask-image em css/animations.css); todo o resto — a máscara
+     circular acompanhando o cursor, blend mode, opacidade — é CSS puro.
+     pointer-events:none o tempo todo, então nunca atrapalha cliques.
+     ------------------------------------------------------------------ */
+  if (!prefersReducedMotion) {
+    var woodReveal = document.createElement("div");
+    woodReveal.id = "wood-reveal";
+    woodReveal.setAttribute("aria-hidden", "true");
+    document.body.appendChild(woodReveal);
+
+    var cursorRafPending = false;
+    var cursorX = 0;
+    var cursorY = 0;
+
+    var applyCursorPosition = function () {
+      cursorRafPending = false;
+      document.documentElement.style.setProperty("--cursor-x", cursorX + "px");
+      document.documentElement.style.setProperty("--cursor-y", cursorY + "px");
+    };
+
+    document.addEventListener(
+      "mousemove",
+      function (e) {
+        cursorX = e.clientX;
+        cursorY = e.clientY;
+        document.body.classList.add("wood-reveal-active");
+        if (!cursorRafPending) {
+          cursorRafPending = true;
+          window.requestAnimationFrame(applyCursorPosition);
+        }
+      },
+      { passive: true }
+    );
+
+    document.addEventListener("mouseleave", function () {
+      document.body.classList.remove("wood-reveal-active");
+    });
+  }
+
+  /* ------------------------------------------------------------------
      Nav scroll state
      ------------------------------------------------------------------ */
   var nav = document.querySelector(".nav-global");

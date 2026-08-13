@@ -1325,10 +1325,38 @@
 }
 
 .checkout-brick-col {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   background: var(--color-canvas);
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
+}
+
+/* Camada decorativa — ver comentário no HTML. Fica atrás de
+   .checkout-brick-content (z-index 1) por causa do isolation:isolate no
+   pai + z-index 0 aqui, então nunca cobre o formulário de pagamento. */
+.checkout-wood-warp {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.07;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    88deg,
+    #3A2E22 0px,
+    #5C4630 7px,
+    #6B4A30 15px,
+    #3A2E22 23px,
+    #5C4630 32px
+  );
+  filter: url(#wood-warp-filter);
+}
+
+.checkout-brick-content {
+  position: relative;
+  z-index: 1;
 }
 
 .checkout-result {
