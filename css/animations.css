@@ -71,7 +71,7 @@
 
 .morph-carousel {
   position: relative;
-  width: min(70vw, 480px);
+  width: min(48vw, 320px);
   aspect-ratio: 4 / 5;
 }
 
@@ -100,20 +100,103 @@
 }
 
 .morph-caption {
-  margin-top: var(--space-lg);
+  margin-top: var(--space-md);
   font: 400 var(--text-lead-airy)/var(--leading-lead-airy) var(--font-display);
   color: var(--color-on-dark-muted);
   text-align: center;
   max-width: 560px;
   padding: 0 var(--space-lg);
-  min-height: 2.6em;
+  min-height: 1.8em;
+}
+
+/* ==========================================================================
+   Cross-sell "Combina bem com" — estilo Amazon "frequently bought
+   together", dentro da vitrine de scroll travado. Peças complementares
+   curadas à mão (data-cross em index.html), dados vindos do array PRODUCTS
+   (js/products.js). Some inteiro (hidden) quando o slide ativo não tem
+   data-cross.
+   ========================================================================== */
+.morph-crosssell {
+  margin-top: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.morph-crosssell-label {
+  font-size: var(--text-fine);
+  color: var(--color-on-dark-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.morph-crosssell-items {
+  display: flex;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.morph-crosssell-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: rgba(247, 243, 238, 0.06);
+  border: 1px solid rgba(247, 243, 238, 0.16);
+  border-radius: var(--radius-pill);
+  padding: 4px 14px 4px 4px;
+  text-decoration: none;
+  transition: background 200ms var(--ease), border-color 200ms var(--ease);
+}
+
+.morph-crosssell-chip:hover {
+  background: rgba(247, 243, 238, 0.12);
+  border-color: rgba(247, 243, 238, 0.32);
+}
+
+.morph-crosssell-chip img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.morph-crosssell-chip-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.morph-crosssell-chip-name {
+  font-size: 12px;
+  color: var(--color-on-dark);
+  font-weight: 600;
+}
+
+.morph-crosssell-chip-price {
+  font-size: 11px;
+  color: var(--color-on-dark-muted);
+}
+
+.morph-crosssell-add-all {
+  margin-top: 2px;
+  padding: 9px 20px;
+  font-size: var(--text-caption);
+}
+
+.morph-crosssell-status {
+  font-size: var(--text-fine);
+  color: var(--color-action-on-dark);
+  min-height: 1em;
 }
 
 .morph-progress {
   width: 120px;
   height: 2px;
   background: rgba(247, 243, 238, 0.2);
-  margin-top: var(--space-xl);
+  margin-top: var(--space-md);
 }
 
 .morph-progress-fill {
