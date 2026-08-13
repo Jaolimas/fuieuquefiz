@@ -1,20 +1,20 @@
 {
   "_comment": "Fonte de verdade dos PREÇOS para validação server-side (api/create-order.js). Mantida separada de js/products.js (que tem os dados completos de catálogo: descrição, materiais, imagem etc., usados só para exibição no navegador). Sempre que um preço mudar em js/products.js, atualize aqui também — não há build step que sincronize os dois automaticamente.",
   "products": [
-    { "slug": "mesa-de-centro-com-lareira", "price": 4900 },
-    { "slug": "par-mesas-fatia-de-tronco", "price": 1780 },
-    { "slug": "banco-ferro-a", "price": 1450 },
-    { "slug": "banco-patio-ripado", "price": 1680 },
-    { "slug": "banco-duo-mesa-central", "price": 3400 },
-    { "slug": "estante-assimetrica-cubos", "price": 4200 },
-    { "slug": "estante-modular-geometrica", "price": 3600 },
-    { "slug": "rack-ripas-verticais", "price": 2950 },
-    { "slug": "console-prateleira-aberta", "price": 1980 },
-    { "slug": "console-tronco-bruto", "price": 2650 },
-    { "slug": "cristaleira-prateleira-escada", "price": 3900 },
-    { "slug": "trio-de-pedestais", "price": 980 },
-    { "slug": "adega-galho-de-arvore", "price": 650 },
-    { "slug": "adega-parede-fatia-tronco", "price": 780 },
-    { "slug": "espelho-fatia-de-tronco", "price": 1450 }
+    { "slug": "mesa-de-centro-com-lareira", "price": 2000 },
+    { "slug": "par-mesas-fatia-de-tronco", "price": 1200 },
+    { "slug": "banco-ferro-a", "price": 2500 },
+    { "slug": "banco-patio-ripado", "price": 2800 },
+    { "slug": "banco-duo-mesa-central", "price": 2500 },
+    { "slug": "estante-assimetrica-cubos", "price": 1000 },
+    { "slug": "estante-modular-geometrica", "price": 1500 },
+    { "slug": "rack-ripas-verticais", "price": 2200 },
+    { "slug": "console-prateleira-aberta", "price": 1500 },
+    { "slug": "console-tronco-bruto", "price": 2500 },
+    { "slug": "cristaleira-prateleira-escada", "price": 3000 },
+    { "slug": "trio-de-pedestais", "price": 900 },
+    { "slug": "adega-galho-de-arvore", "price": 900 },
+    { "slug": "adega-parede-fatia-tronco", "price": 1000 },
+    { "slug": "espelho-fatia-de-tronco", "price": 3200 }
   ]
 }
