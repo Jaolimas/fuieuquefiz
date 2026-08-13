@@ -1370,6 +1370,67 @@
   padding: var(--space-sm);
 }
 
+.checkout-receipt {
+  background: var(--color-canvas-alt);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.checkout-receipt-title {
+  font-size: var(--text-body-strong);
+  font-weight: 600;
+  margin-bottom: var(--space-md);
+}
+
+.checkout-receipt-form {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-hairline);
+}
+
+.checkout-receipt-label {
+  display: block;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+}
+
+.checkout-receipt-email-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.text-input {
+  flex: 1 1 200px;
+  min-width: 0;
+  font: 400 var(--text-body)/1 var(--font-text);
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  border: var(--border-hairline);
+  border-radius: var(--radius-pill);
+  padding: 11px 18px;
+  min-height: 44px;
+}
+
+.text-input:focus-visible {
+  outline: 2px solid var(--color-action);
+  outline-offset: 1px;
+}
+
+.checkout-receipt-status {
+  font-size: var(--text-caption);
+  color: var(--color-ink-80);
+  margin-top: var(--space-sm);
+  min-height: 1.4em;
+}
+
+.checkout-receipt-status--error {
+  color: var(--color-action);
+}
+
 /* ==========================================================================
    Sobre & Contato — shared long-form content typography
    Composed entirely from existing tokens (see tokens.css) — no new hex.

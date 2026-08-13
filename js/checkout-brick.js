@@ -18,6 +18,12 @@
       devolve status "in_process" + os dados do QR Code/copia-e-cola
       (payload.result.pix), exibidos por showPix(); a confirmação real do
       pagamento chega depois, de forma assíncrona, via api/webhook.js.
+   6. Nos dois casos de sucesso (aprovado ou Pix pendente), showReceipt()
+      exibe o card #checkout-receipt com o resumo do pedido (peça,
+      quantidade, valor, total) e um formulário pra receber esse resumo
+      por e-mail — ao enviar, chama /api/send-receipt (Resend), que
+      recalcula os valores a partir de data/products.json antes de
+      montar o e-mail.
    ========================================================================== */
 
 (function () {
@@ -35,11 +41,33 @@
   var pixQrEl = document.getElementById("checkout-pix-qr");
   var pixCodeEl = document.getElementById("checkout-pix-code");
   var pixCopyBtn = document.getElementById("checkout-pix-copy");
+  var receiptEl = document.getElementById("checkout-receipt");
+  var receiptLinesEl = document.getElementById("checkout-receipt-lines");
+  var receiptTotalEl = document.getElementById("checkout-receipt-total");
+  var receiptForm = document.getElementById("checkout-receipt-form");
+  var receiptEmailInput = document.getElementById("checkout-receipt-email");
+  var receiptSendBtn = document.getElementById("checkout-receipt-send-btn");
+  var receiptStatusEl = document.getElementById("checkout-receipt-status");
 
   function escapeHtml(str) {
     var div = document.createElement("div");
     div.textContent = str == null ? "" : String(str);
     return div.innerHTML;
+  }
+
+  function summaryLinesHtml(list) {
+    return list.map(function (item) {
+      var subtotal = item.unitPrice * item.qty;
+      return (
+        '<div class="checkout-summary-line">' +
+          '<span>' +
+            '<span class="checkout-summary-line-name">' + item.qty + 'x ' + escapeHtml(item.name) + '</span>' +
+            (item.configSummary ? '<span class="checkout-summary-line-config">' + escapeHtml(item.configSummary) + '</span>' : '') +
+          '</span>' +
+          '<span>' + formatBRL(subtotal) + '</span>' +
+        '</div>'
+      );
+    }).join("");
   }
 
   function showResult(kind, message) {
@@ -90,22 +118,79 @@
 
   var total = window.Cart.getCartTotal();
 
-  if (summaryLinesEl) {
-    summaryLinesEl.innerHTML = items.map(function (item) {
-      var subtotal = item.unitPrice * item.qty;
-      return (
-        '<div class="checkout-summary-line">' +
-          '<span>' +
-            '<span class="checkout-summary-line-name">' + item.qty + 'x ' + escapeHtml(item.name) + '</span>' +
-            (item.configSummary ? '<span class="checkout-summary-line-config">' + escapeHtml(item.configSummary) + '</span>' : '') +
-          '</span>' +
-          '<span>' + formatBRL(subtotal) + '</span>' +
-        '</div>'
-      );
-    }).join("");
+  if (summaryLinesEl) summaryLinesEl.innerHTML = summaryLinesHtml(items);
+  if (totalEl) totalEl.textContent = formatBRL(total);
+
+  /* ------------------------------------------------------------------
+     Card de confirmação pós-pagamento — resumo do pedido + opção de
+     receber por e-mail (chamado depois que a order é criada com
+     sucesso, aprovada na hora ou Pix aguardando pagamento).
+     ------------------------------------------------------------------ */
+  function showReceipt() {
+    if (!receiptEl) return;
+    if (receiptLinesEl) receiptLinesEl.innerHTML = summaryLinesHtml(items);
+    if (receiptTotalEl) receiptTotalEl.textContent = formatBRL(total);
+    receiptEl.hidden = false;
   }
 
-  if (totalEl) totalEl.textContent = formatBRL(total);
+  if (receiptForm) {
+    receiptForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!receiptEmailInput || !receiptEmailInput.value.trim()) return;
+
+      var email = receiptEmailInput.value.trim();
+      var originalBtnText = receiptSendBtn ? receiptSendBtn.textContent : "";
+
+      if (receiptSendBtn) {
+        receiptSendBtn.disabled = true;
+        receiptSendBtn.textContent = "Enviando...";
+      }
+      if (receiptStatusEl) {
+        receiptStatusEl.className = "checkout-receipt-status";
+        receiptStatusEl.textContent = "";
+      }
+
+      fetch("/api/send-receipt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email,
+          items: items.map(function (item) {
+            return {
+              slug: item.slug,
+              qty: item.qty,
+              sizeVariantLabel: item.sizeVariantLabel || null,
+              name: item.name,
+              configSummary: item.configSummary || ""
+            };
+          })
+        })
+      })
+        .then(function (res) {
+          return res.json().then(function (result) { return { ok: res.ok, result: result }; });
+        })
+        .then(function (payload) {
+          if (receiptSendBtn) {
+            receiptSendBtn.disabled = false;
+            receiptSendBtn.textContent = originalBtnText;
+          }
+          if (receiptStatusEl) {
+            receiptStatusEl.className = "checkout-receipt-status" + (payload.ok ? "" : " checkout-receipt-status--error");
+            receiptStatusEl.textContent = payload.result.message || (payload.ok ? "E-mail enviado!" : "Não foi possível enviar o e-mail.");
+          }
+        })
+        .catch(function () {
+          if (receiptSendBtn) {
+            receiptSendBtn.disabled = false;
+            receiptSendBtn.textContent = originalBtnText;
+          }
+          if (receiptStatusEl) {
+            receiptStatusEl.className = "checkout-receipt-status checkout-receipt-status--error";
+            receiptStatusEl.textContent = "Erro de conexão. Tente novamente.";
+          }
+        });
+    });
+  }
 
   /* ------------------------------------------------------------------
      2 e 3. Public Key + montagem do Brick
@@ -210,11 +295,13 @@
 
                 var status = payload.result.status;
                 if (status === "approved") {
-                  showResult("approved", payload.result.message || "Pagamento aprovado! Você vai receber a confirmação por e-mail, e nossa equipe entra em contato pelo WhatsApp para combinar prazo e frete.");
+                  showResult("approved", payload.result.message || "Pagamento aprovado! Nossa equipe entra em contato pelo WhatsApp para combinar prazo e frete.");
+                  showReceipt();
                   if (window.Cart && window.Cart.clear) window.Cart.clear();
                 } else if (status === "in_process") {
                   showResult("pending", payload.result.message || "Pagamento em análise — assim que for confirmado, avisamos você.");
                   if (payload.result.pix) showPix(payload.result.pix);
+                  showReceipt();
                   if (window.Cart && window.Cart.clear) window.Cart.clear();
                 } else {
                   showResult("rejected", payload.result.message || "Pagamento recusado.");

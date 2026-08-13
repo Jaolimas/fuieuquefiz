@@ -92,6 +92,22 @@
                 <button type="button" id="checkout-pix-copy" class="btn btn--ghost">Copiar código</button>
               </div>
             </div>
+            <div id="checkout-receipt" class="checkout-receipt" hidden>
+              <h2 class="checkout-receipt-title">Resumo do seu pedido</h2>
+              <div id="checkout-receipt-lines"></div>
+              <div class="checkout-total-row">
+                <span>Total</span>
+                <span id="checkout-receipt-total">R$ 0</span>
+              </div>
+              <form id="checkout-receipt-form" class="checkout-receipt-form">
+                <label for="checkout-receipt-email" class="checkout-receipt-label">Receber esse resumo por e-mail</label>
+                <div class="checkout-receipt-email-row">
+                  <input type="email" id="checkout-receipt-email" class="text-input" placeholder="seu@email.com" required autocomplete="email">
+                  <button type="submit" class="btn btn--ghost" id="checkout-receipt-send-btn">Enviar por e-mail</button>
+                </div>
+                <p id="checkout-receipt-status" class="checkout-receipt-status" role="status" aria-live="polite"></p>
+              </form>
+            </div>
             <div id="payment-brick-container"></div>
           </div>
         </div>

@@ -119,15 +119,25 @@ O carrinho (`js/cart.js`) tem duas formas de finalizar pedido:
 
 **Sem banco de dados:** este site não tem persistência de pedidos (nem tinha antes). `api/webhook.js` valida a notificação do Mercado Pago e só loga o resultado — não grava em lugar nenhum. Se no futuro quiserem histórico de pedidos de verdade, isso significa adicionar um banco (ex: Vercel Postgres/KV), um passo maior não incluído aqui.
 
+### Resumo do pedido por e-mail (Resend)
+
+Depois que a order é criada com sucesso (cartão aprovado ou Pix pendente), `checkout.html` mostra um card com o resumo do pedido (peça, quantidade, valor, total) e um campo pra digitar o e-mail e receber esse resumo — é opt-in, o cliente decide se quer, não é automático.
+
+- `js/checkout-brick.js` (`showReceipt()`) monta o card a partir dos mesmos itens do carrinho; ao enviar o formulário, chama `api/send-receipt.js`.
+- `api/send-receipt.js` **recalcula preço e total a partir de `data/products.json`** (mesma regra de segurança do `create-order.js` — nunca confia em valor vindo do navegador) e envia o e-mail via API HTTP do [Resend](https://resend.com) (sem SDK, `fetch` direto — mesmo padrão usado pra Mercado Pago).
+- ⚠️ **Enquanto nenhum domínio estiver verificado na conta Resend, só é possível enviar para o e-mail com que a conta foi criada** (restrição deles, não deste código — evita spam antes da verificação). Depois de verificar um domínio próprio (ex: `fuieuquefiz.com.br`, com os registros DNS SPF/DKIM que o painel do Resend pedir), configure `RESEND_FROM_EMAIL` com um remetente desse domínio (ex: `"FuiEuQueFiz <pedidos@fuieuquefiz.com.br>"`) e o envio passa a funcionar pra qualquer cliente, sem mexer em código.
+
 ### Variáveis de ambiente necessárias
 
-Configure as três na Vercel (Project Settings → Environment Variables) — **nunca em nenhum arquivo do projeto nem em conversas/chat**:
+Configure na Vercel (Project Settings → Environment Variables) — **nunca em nenhum arquivo do projeto nem em conversas/chat**:
 
 | Variável | Onde pegar |
 |---|---|
 | `MP_ACCESS_TOKEN` | [mercadopago.com.br/developers/panel](https://www.mercadopago.com.br/developers/panel) → sua aplicação → **Credenciais de produção** → campo "Access Token" (secreta — nunca vai para o navegador) |
 | `MP_PUBLIC_KEY` | Mesma tela acima, campo "Public Key" (não é secreta — pode circular no navegador, é isso que `api/public-config.js` expõe) |
 | `MP_WEBHOOK_SECRET` | Mesma aplicação → aba **Webhooks** → "Configurar notificação" → revelar a chave secreta gerada ali |
+| `RESEND_API_KEY` | [resend.com/api-keys](https://resend.com/api-keys) → criar API key (secreta) |
+| `RESEND_FROM_EMAIL` | Opcional — padrão é `"FuiEuQueFiz <onboarding@resend.dev>"` (só funciona pro próprio e-mail da conta Resend); depois de verificar domínio próprio, troque por um remetente desse domínio |
 
 Depois de salvar, redeploy o projeto (qualquer alteração de variável de ambiente pede um novo deploy para valer).
 
