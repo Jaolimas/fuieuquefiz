@@ -1,7 +1,7 @@
 {
   "_comment": "Fonte de verdade dos PREÇOS para validação server-side (api/create-order.js). Mantida separada de js/products.js (que tem os dados completos de catálogo: descrição, materiais, imagem etc., usados só para exibição no navegador). Sempre que um preço mudar em js/products.js, atualize aqui também — não há build step que sincronize os dois automaticamente.",
   "products": [
-    { "slug": "mesa-de-centro-com-lareira", "price": 2000 },
+    { "slug": "mesa-de-centro-com-lareira", "price": 1 },
     { "slug": "par-mesas-fatia-de-tronco", "price": 1200 },
     { "slug": "banco-ferro-a", "price": 2500 },
     { "slug": "banco-patio-ripado", "price": 2800 },
