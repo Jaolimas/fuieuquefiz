@@ -48,13 +48,29 @@
       return false;
     };
 
-    var cursorTick = function () {
-      /* Suaviza a posição em vez de seguir o mouse 1:1 — o círculo "desliza"
+    var cursorTick = function (time) {
+      /* Suaviza a posição em vez de seguir o mouse 1:1 — a mancha "desliza"
          atrás do cursor com um pequeno atraso. */
       smoothX += (targetX - smoothX) * 0.12;
       smoothY += (targetY - smoothY) * 0.12;
-      document.documentElement.style.setProperty("--cursor-x", smoothX + "px");
-      document.documentElement.style.setProperty("--cursor-y", smoothY + "px");
+
+      /* Dois círculos extras orbitando o centro em frequências/fases
+         diferentes — a união deles com o círculo principal (ver
+         css/animations.css) muda de forma continuamente, como uma ameba,
+         em vez de ficar um círculo parado. */
+      var t = time || performance.now();
+      var blob2X = smoothX + Math.cos(t * 0.00055) * 24;
+      var blob2Y = smoothY + Math.sin(t * 0.0008 + 1.3) * 18;
+      var blob3X = smoothX + Math.cos(t * 0.0011 + 3.1) * 18;
+      var blob3Y = smoothY + Math.sin(t * 0.0007 + 4.7) * 22;
+
+      var rootStyle = document.documentElement.style;
+      rootStyle.setProperty("--cursor-x", smoothX + "px");
+      rootStyle.setProperty("--cursor-y", smoothY + "px");
+      rootStyle.setProperty("--blob2-x", blob2X + "px");
+      rootStyle.setProperty("--blob2-y", blob2Y + "px");
+      rootStyle.setProperty("--blob3-x", blob3X + "px");
+      rootStyle.setProperty("--blob3-y", blob3Y + "px");
 
       var elUnderCursor = document.elementFromPoint(smoothX, smoothY);
       document.body.classList.toggle("wood-reveal-discreet", isOverContent(elUnderCursor));
