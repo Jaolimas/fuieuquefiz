@@ -17,7 +17,9 @@
 
    Regras de segurança seguidas aqui:
    - O total NUNCA vem do navegador: é recalculado a partir de
-     data/products.json (única fonte de verdade de preço) a cada chamada.
+     data/products.json (única fonte de verdade de preço) a cada chamada,
+     e o desconto de brinde (pedidos ≥ R$3.000) é aplicado aqui em cima
+     desse subtotal — nunca confiamos em desconto calculado no navegador.
    - Nunca logamos token de cartão, e-mail do pagador ou qualquer dado
      pessoal — só id do pedido, status e status_detail (não sensíveis).
    - Idempotency key gerada a cada requisição (crypto.randomUUID()) evita
@@ -98,8 +100,8 @@ function loadProductsMap() {
   return map;
 }
 
-function computeAuthoritativeTotal(items, productsMap) {
-  let total = 0;
+function computeAuthoritativeSubtotal(items, productsMap) {
+  let subtotal = 0;
 
   for (const item of items) {
     const product = productsMap[item && item.slug];
@@ -114,10 +116,31 @@ function computeAuthoritativeTotal(items, productsMap) {
       unitPrice += variant.priceDelta;
     }
 
-    total += unitPrice * qty;
+    subtotal += unitPrice * qty;
   }
 
-  return Math.round(total * 100) / 100;
+  return Math.round(subtotal * 100) / 100;
+}
+
+/* ==========================================================================
+   Regra de brinde + desconto: pedidos que somam R$3.000 ou mais (subtotal,
+   antes do desconto) ganham um brinde da FuiEuQueFiz e 5% de desconto no
+   total cobrado. Duplicado em js/products.js (computeOrderTotals, usado só
+   pra exibição no navegador) e em api/send-receipt.js — qualquer mudança
+   aqui precisa ser replicada nos dois outros lugares.
+   ========================================================================== */
+const GIFT_DISCOUNT_THRESHOLD = 3000;
+const GIFT_DISCOUNT_RATE = 0.05;
+
+function applyGiftDiscount(subtotal) {
+  const qualifies = subtotal >= GIFT_DISCOUNT_THRESHOLD;
+  const discount = qualifies ? Math.round(subtotal * GIFT_DISCOUNT_RATE * 100) / 100 : 0;
+  return {
+    subtotal,
+    discount,
+    total: Math.round((subtotal - discount) * 100) / 100,
+    qualifies
+  };
 }
 
 export default async function handler(req, res) {
@@ -155,14 +178,16 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: "Dados do pagamento incompletos." });
   }
 
-  let totalAmount;
+  let totals;
   try {
     const productsMap = loadProductsMap();
-    totalAmount = computeAuthoritativeTotal(items, productsMap);
+    const subtotal = computeAuthoritativeSubtotal(items, productsMap);
+    totals = applyGiftDiscount(subtotal);
   } catch (err) {
     return res.status(400).json({ message: "Não foi possível validar os itens do carrinho: " + err.message });
   }
 
+  const totalAmount = totals.total;
   if (!(totalAmount > 0)) {
     return res.status(400).json({ message: "Valor do pedido inválido." });
   }
@@ -251,7 +276,8 @@ export default async function handler(req, res) {
     return res.status(200).json({
       status: category === "approved" ? "approved" : category === "pending" ? "in_process" : "rejected",
       message: friendlyMessage(category, statusDetail),
-      pix: pix
+      pix: pix,
+      totals: totals
     });
   } catch (err) {
     console.error("Falha ao chamar a API do Mercado Pago:", err.message);

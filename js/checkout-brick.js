@@ -20,7 +20,9 @@
       pagamento chega depois, de forma assíncrona, via api/webhook.js.
    6. Nos dois casos de sucesso (aprovado ou Pix pendente), showReceipt()
       exibe o card #checkout-receipt com o resumo do pedido (peça,
-      quantidade, valor, total) e um formulário pra receber esse resumo
+      quantidade, valor, total — já incluindo o desconto de brinde, se o
+      pedido tiver atingido R$3.000, usando o total que o servidor devolveu
+      em payload.result.totals) e um formulário pra receber esse resumo
       por e-mail — ao enviar, chama /api/send-receipt (Resend), que
       recalcula os valores a partir de data/products.json antes de
       montar o e-mail.
@@ -35,7 +37,12 @@
   var emptyEl = document.getElementById("checkout-empty");
   var gridEl = document.getElementById("checkout-grid");
   var summaryLinesEl = document.getElementById("checkout-summary-lines");
+  var subtotalRowEl = document.getElementById("checkout-subtotal-row");
+  var subtotalEl = document.getElementById("checkout-subtotal");
+  var discountRowEl = document.getElementById("checkout-discount-row");
+  var discountEl = document.getElementById("checkout-discount");
   var totalEl = document.getElementById("checkout-total");
+  var giftNoteEl = document.getElementById("checkout-gift-note");
   var resultEl = document.getElementById("checkout-result");
   var pixEl = document.getElementById("checkout-pix");
   var pixQrEl = document.getElementById("checkout-pix-qr");
@@ -43,7 +50,12 @@
   var pixCopyBtn = document.getElementById("checkout-pix-copy");
   var receiptEl = document.getElementById("checkout-receipt");
   var receiptLinesEl = document.getElementById("checkout-receipt-lines");
+  var receiptSubtotalRowEl = document.getElementById("checkout-receipt-subtotal-row");
+  var receiptSubtotalEl = document.getElementById("checkout-receipt-subtotal");
+  var receiptDiscountRowEl = document.getElementById("checkout-receipt-discount-row");
+  var receiptDiscountEl = document.getElementById("checkout-receipt-discount");
   var receiptTotalEl = document.getElementById("checkout-receipt-total");
+  var receiptGiftNoteEl = document.getElementById("checkout-receipt-gift-note");
   var receiptPaymentEl = document.getElementById("checkout-receipt-payment");
   var receiptForm = document.getElementById("checkout-receipt-form");
   var receiptEmailInput = document.getElementById("checkout-receipt-email");
@@ -104,6 +116,35 @@
     }).join("");
   }
 
+  /* Preenche subtotal/desconto/total + nota de brinde a partir de um objeto
+     { subtotal, discount, total, qualifies } (ver computeOrderTotals em
+     js/products.js). mode "promo" (resumo, antes de pagar) sempre mostra a
+     nota, convidando o cliente a atingir o valor mínimo; mode "confirm"
+     (card de recibo, depois de pagar) só mostra quando já qualificou. */
+  function applyTotalsToDom(totals, els, mode) {
+    if (els.totalEl) els.totalEl.textContent = formatBRL(totals.total);
+
+    if (els.subtotalRowEl) els.subtotalRowEl.hidden = !totals.qualifies;
+    if (els.subtotalEl) els.subtotalEl.textContent = formatBRL(totals.subtotal);
+
+    if (els.discountRowEl) els.discountRowEl.hidden = !totals.qualifies;
+    if (els.discountEl) els.discountEl.textContent = "-" + formatBRL(totals.discount);
+
+    if (els.giftNoteEl) {
+      if (totals.qualifies) {
+        els.giftNoteEl.textContent = "🎁 Seu pedido ganhou um brinde da FuiEuQueFiz e 5% de desconto!";
+        els.giftNoteEl.classList.add("is-active");
+        els.giftNoteEl.hidden = false;
+      } else if (mode === "promo") {
+        els.giftNoteEl.textContent = "Compras a partir de " + formatBRL(GIFT_DISCOUNT_THRESHOLD) + " ganham brinde da FuiEuQueFiz + 5% de desconto.";
+        els.giftNoteEl.classList.remove("is-active");
+        els.giftNoteEl.hidden = false;
+      } else {
+        els.giftNoteEl.hidden = true;
+      }
+    }
+  }
+
   function showResult(kind, message) {
     if (!resultEl) return;
     resultEl.className = "checkout-result checkout-result--" + kind;
@@ -150,21 +191,36 @@
     return;
   }
 
-  var total = window.Cart.getCartTotal();
+  var totals = window.Cart.getCartTotals();
+  var total = totals.total; /* usado como valor inicial do Brick (parcelamento) — o servidor recalcula ao criar a order */
 
   if (summaryLinesEl) summaryLinesEl.innerHTML = summaryLinesHtml(items);
-  if (totalEl) totalEl.textContent = formatBRL(total);
+  applyTotalsToDom(totals, {
+    totalEl: totalEl,
+    subtotalRowEl: subtotalRowEl,
+    subtotalEl: subtotalEl,
+    discountRowEl: discountRowEl,
+    discountEl: discountEl,
+    giftNoteEl: giftNoteEl
+  }, "promo");
 
   /* ------------------------------------------------------------------
      Card de confirmação pós-pagamento — resumo do pedido + opção de
      receber por e-mail (chamado depois que a order é criada com
      sucesso, aprovada na hora ou Pix aguardando pagamento).
      ------------------------------------------------------------------ */
-  function showReceipt(paymentLabel) {
+  function showReceipt(paymentLabel, orderTotals) {
     if (!receiptEl) return;
     currentPaymentLabel = paymentLabel || "";
     if (receiptLinesEl) receiptLinesEl.innerHTML = summaryLinesHtml(items);
-    if (receiptTotalEl) receiptTotalEl.textContent = formatBRL(total);
+    applyTotalsToDom(orderTotals || totals, {
+      totalEl: receiptTotalEl,
+      subtotalRowEl: receiptSubtotalRowEl,
+      subtotalEl: receiptSubtotalEl,
+      discountRowEl: receiptDiscountRowEl,
+      discountEl: receiptDiscountEl,
+      giftNoteEl: receiptGiftNoteEl
+    }, "confirm");
     if (receiptPaymentEl) receiptPaymentEl.textContent = currentPaymentLabel;
     receiptEl.hidden = false;
   }
@@ -334,12 +390,12 @@
                 var paymentLabel = paymentMethodLabel(paymentType, formData);
                 if (status === "approved") {
                   showResult("approved", payload.result.message || "Pagamento aprovado! Nossa equipe entra em contato pelo WhatsApp para combinar prazo e frete.");
-                  showReceipt(paymentLabel);
+                  showReceipt(paymentLabel, payload.result.totals);
                   if (window.Cart && window.Cart.clear) window.Cart.clear();
                 } else if (status === "in_process") {
                   showResult("pending", payload.result.message || "Pagamento em análise — assim que for confirmado, avisamos você.");
                   if (payload.result.pix) showPix(payload.result.pix);
-                  showReceipt(paymentLabel);
+                  showReceipt(paymentLabel, payload.result.totals);
                   if (window.Cart && window.Cart.clear) window.Cart.clear();
                 } else {
                   showResult("rejected", payload.result.message || "Pagamento recusado.");

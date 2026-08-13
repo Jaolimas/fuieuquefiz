@@ -38,12 +38,12 @@ function formatBRL(value) {
   return "R$ " + Math.round(value).toLocaleString("pt-BR");
 }
 
-/* Espelha computeAuthoritativeTotal() de api/create-order.js, mas também
+/* Espelha computeAuthoritativeSubtotal() de api/create-order.js, mas também
    devolve a linha de cada item (nome, quantidade, preço unitário,
    subtotal) — o e-mail precisa do detalhamento, não só do total. */
 function buildReceiptLines(items, productsMap) {
   const lines = [];
-  let total = 0;
+  let subtotal = 0;
 
   for (const item of items) {
     const product = productsMap[item && item.slug];
@@ -58,19 +58,40 @@ function buildReceiptLines(items, productsMap) {
       unitPrice += variant.priceDelta;
     }
 
-    const subtotal = unitPrice * qty;
-    total += subtotal;
+    const lineSubtotal = unitPrice * qty;
+    subtotal += lineSubtotal;
 
     lines.push({
       name: (item && item.name) || product.name,
       configSummary: (item && item.configSummary) || "",
       qty: qty,
       unitPrice: unitPrice,
-      subtotal: subtotal
+      subtotal: lineSubtotal
     });
   }
 
-  return { lines, total: Math.round(total * 100) / 100 };
+  return { lines, subtotal: Math.round(subtotal * 100) / 100 };
+}
+
+/* ==========================================================================
+   Regra de brinde + desconto: pedidos que somam R$3.000 ou mais (subtotal,
+   antes do desconto) ganham um brinde da FuiEuQueFiz e 5% de desconto no
+   total. Duplicado em js/products.js (computeOrderTotals, exibição) e em
+   api/create-order.js (cobrança de verdade) — qualquer mudança aqui precisa
+   ser replicada nos dois outros lugares.
+   ========================================================================== */
+const GIFT_DISCOUNT_THRESHOLD = 3000;
+const GIFT_DISCOUNT_RATE = 0.05;
+
+function applyGiftDiscount(subtotal) {
+  const qualifies = subtotal >= GIFT_DISCOUNT_THRESHOLD;
+  const discount = qualifies ? Math.round(subtotal * GIFT_DISCOUNT_RATE * 100) / 100 : 0;
+  return {
+    subtotal,
+    discount,
+    total: Math.round((subtotal - discount) * 100) / 100,
+    qualifies
+  };
 }
 
 function escapeHtml(str) {
@@ -80,7 +101,7 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
-function buildReceiptHtml(lines, total, paymentLabel) {
+function buildReceiptHtml(lines, totals, paymentLabel) {
   const rows = lines.map(function (line) {
     return (
       '<tr>' +
@@ -93,17 +114,34 @@ function buildReceiptHtml(lines, total, paymentLabel) {
     );
   }).join("");
 
+  const discountRows = totals.qualifies
+    ? '<tr>' +
+        '<td style="padding:6px 0;color:#8A7F74;font-size:13px;">Subtotal</td>' +
+        '<td style="padding:6px 0;text-align:right;color:#8A7F74;font-size:13px;">' + formatBRL(totals.subtotal) + '</td>' +
+      '</tr>' +
+      '<tr>' +
+        '<td style="padding:6px 0;color:#A6491E;font-weight:bold;font-size:13px;">Desconto (5%)</td>' +
+        '<td style="padding:6px 0;text-align:right;color:#A6491E;font-weight:bold;font-size:13px;">-' + formatBRL(totals.discount) + '</td>' +
+      '</tr>'
+    : '';
+
+  const giftNote = totals.qualifies
+    ? '<p style="color:#A6491E;font-weight:bold;font-size:13px;margin-top:16px;">🎁 Seu pedido ganhou um brinde da FuiEuQueFiz e 5% de desconto!</p>'
+    : '';
+
   return (
     '<div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;color:#211C17;">' +
       '<h1 style="font-size:20px;margin-bottom:4px;">Resumo do seu pedido — FuiEuQueFiz</h1>' +
       '<p style="color:#4A4038;font-size:14px;margin-top:0;">Frete e prazo de produção são combinados por WhatsApp após a confirmação do pagamento.</p>' +
       '<table style="width:100%;border-collapse:collapse;margin-top:16px;">' +
         rows +
+        discountRows +
         '<tr>' +
           '<td style="padding:14px 0 0;font-weight:bold;">Total</td>' +
-          '<td style="padding:14px 0 0;font-weight:bold;text-align:right;">' + formatBRL(total) + '</td>' +
+          '<td style="padding:14px 0 0;font-weight:bold;text-align:right;">' + formatBRL(totals.total) + '</td>' +
         '</tr>' +
       '</table>' +
+      giftNote +
       (paymentLabel ? '<p style="color:#4A4038;font-size:13px;margin-top:16px;">Forma de pagamento: ' + escapeHtml(paymentLabel) + '</p>' : '') +
     '</div>'
   );
@@ -144,10 +182,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: "Não há itens para enviar." });
   }
 
-  let lines, total;
+  let lines, totals;
   try {
     const productsMap = loadProductsMap();
-    ({ lines, total } = buildReceiptLines(items, productsMap));
+    const built = buildReceiptLines(items, productsMap);
+    lines = built.lines;
+    totals = applyGiftDiscount(built.subtotal);
   } catch (err) {
     return res.status(400).json({ message: "Não foi possível validar os itens do pedido: " + err.message });
   }
@@ -165,7 +205,7 @@ export default async function handler(req, res) {
         from: from,
         to: [email],
         subject: "Seu pedido FuiEuQueFiz",
-        html: buildReceiptHtml(lines, total, paymentLabel)
+        html: buildReceiptHtml(lines, totals, paymentLabel)
       })
     });
 

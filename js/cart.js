@@ -97,6 +97,12 @@
     }, 0);
   }
 
+  /* { subtotal, discount, total, qualifies } — regra de brinde + 5% de
+     desconto acima de R$3.000, definida em js/products.js (computeOrderTotals). */
+  function getCartTotals() {
+    return computeOrderTotals(getCartTotal());
+  }
+
   function getCartCount() {
     return readCart().reduce(function (sum, item) {
       return sum + item.qty;
@@ -206,9 +212,19 @@
 
     bodyContainer.innerHTML = linesHtml;
 
-    var total = getCartTotal();
+    var totals = getCartTotals();
+    var discountRowsHtml = totals.qualifies
+      ? '<div class="price-subtotal-row"><span>Subtotal</span><span>' + formatBRL(totals.subtotal) + '</span></div>' +
+        '<div class="price-discount-row"><span>Desconto (5%)</span><span>-' + formatBRL(totals.discount) + '</span></div>'
+      : '';
+    var giftNoteHtml = totals.qualifies
+      ? '<p class="gift-promo-note is-active">🎁 Sua compra ganhou um brinde da FuiEuQueFiz e 5% de desconto!</p>'
+      : '<p class="gift-promo-note">Compras a partir de ' + formatBRL(GIFT_DISCOUNT_THRESHOLD) + ' ganham brinde da FuiEuQueFiz + 5% de desconto.</p>';
+
     footerContainer.innerHTML =
-      '<div class="cart-total-row"><span>Total</span><span>' + formatBRL(total) + '</span></div>' +
+      discountRowsHtml +
+      '<div class="cart-total-row"><span>Total</span><span>' + formatBRL(totals.total) + '</span></div>' +
+      giftNoteHtml +
       '<p class="cart-microcopy">Você será redirecionado ao WhatsApp com sua lista — nossa equipe confirma disponibilidade, prazo e frete.</p>' +
       '<button type="button" class="btn btn--primary cart-checkout-btn">Finalizar pedido via WhatsApp</button>' +
       '<p class="cart-microcopy cart-microcopy--pay">Ou pague agora o valor das peças com cartão, sem sair do site — frete e prazo de produção são combinados depois pelo WhatsApp.</p>' +
@@ -247,9 +263,17 @@
       return item.qty + "x " + item.name + configPart + " — " + formatBRL(subtotal);
     });
 
+    var totals = getCartTotals();
+    var totalsText = totals.qualifies
+      ? "\n\nSubtotal: " + formatBRL(totals.subtotal) +
+        "\nDesconto (5%): -" + formatBRL(totals.discount) +
+        "\nTotal: " + formatBRL(totals.total) +
+        "\n\n🎁 Esse pedido dá direito a um brinde da FuiEuQueFiz!"
+      : "\n\nTotal: " + formatBRL(totals.total);
+
     var message =
       lines.join("\n") +
-      "\n\nTotal: " + formatBRL(getCartTotal()) +
+      totalsText +
       "\n\nPedido feito pelo site FuiEuQueFiz. Prazo de produção e frete serão confirmados por peça.";
 
     // TODO: substituir 5500000000000 pelo número real do WhatsApp da loja (mesmo número usado no hero de index.html)
@@ -324,6 +348,7 @@
     removeFromCart: removeFromCart,
     updateQty: updateQty,
     getCartTotal: getCartTotal,
+    getCartTotals: getCartTotals,
     getCartCount: getCartCount,
     getItems: readCart, /* used by js/checkout-brick.js to know what's being paid for */
     clear: clearCart,

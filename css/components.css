@@ -1209,6 +1209,38 @@
   color: var(--color-ink-48);
 }
 
+/* ==========================================================================
+   Regra de brinde + 5% de desconto acima de R$3.000 — usado no carrinho
+   (cart.js) e no checkout (checkout.html / checkout-brick.js).
+   ========================================================================== */
+.price-subtotal-row,
+.price-discount-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-caption);
+}
+
+.price-subtotal-row {
+  color: var(--color-ink-48);
+}
+
+.price-discount-row {
+  color: var(--color-action);
+  font-weight: 600;
+}
+
+.gift-promo-note {
+  font-size: var(--text-fine);
+  line-height: 1.4;
+  color: var(--color-ink-48);
+  margin-top: var(--space-sm);
+}
+
+.gift-promo-note.is-active {
+  color: var(--color-action);
+  font-weight: 600;
+}
+
 .cart-checkout-btn,
 .cart-pay-btn {
   width: 100%;

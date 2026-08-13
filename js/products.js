@@ -118,6 +118,27 @@ function formatBRLDelta(value) {
 }
 
 /* ==========================================================================
+   Regra de brinde + desconto: pedidos que somam R$ 3.000 ou mais (antes do
+   desconto) ganham um brinde da FuiEuQueFiz e 5% de desconto no total.
+   Duplicado em api/create-order.js e api/send-receipt.js (Node, roda no
+   servidor, onde o valor cobrado de verdade é decidido) — qualquer mudança
+   no valor/percentual aqui precisa ser replicada nos dois arquivos.
+   ========================================================================== */
+var GIFT_DISCOUNT_THRESHOLD = 3000;
+var GIFT_DISCOUNT_RATE = 0.05;
+
+function computeOrderTotals(subtotal) {
+  var qualifies = subtotal >= GIFT_DISCOUNT_THRESHOLD;
+  var discount = qualifies ? Math.round(subtotal * GIFT_DISCOUNT_RATE * 100) / 100 : 0;
+  return {
+    subtotal: subtotal,
+    discount: discount,
+    total: Math.round((subtotal - discount) * 100) / 100,
+    qualifies: qualifies
+  };
+}
+
+/* ==========================================================================
    getShotGradient — deterministic palette-cycling for the .product-shot
    placeholder background. 6 warm gradient pairs composed only from tokens
    already in the system (--color-dark-1, --color-dark-3, #5C4630, #3A2E22,
