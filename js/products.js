@@ -6,7 +6,7 @@
    ========================================================================== */
 
 const PRODUCTS = [
-  { slug:"mesa-de-centro-com-lareira", name:"Mesa de Centro com Lareira", category:"Mesas", price:1,
+  { slug:"mesa-de-centro-com-lareira", name:"Mesa de Centro com Lareira", category:"Mesas", price:2000,
     image:"assets/products/mesa-de-centro-com-lareira.png",
     short:"Mesa de centro em fatia de tronco maciço com lareira de mesa embutida (a etanol).",
     description:"Tronco maciço de borda natural com uma lareira de mesa a etanol embutida no centro — casca preservada, formato orgânico único, acabamento em verniz de alto brilho. Uma peça-conversa para a sala.",
