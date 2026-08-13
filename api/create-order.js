@@ -52,7 +52,7 @@ const STATUS_DETAIL_MESSAGES = {
   cc_rejected_other_reason: "Seu banco recusou o pagamento sem detalhar o motivo. Tente outro cartão ou finalize pelo WhatsApp.",
   pending_contingency: "Estamos processando seu pagamento — pode levar alguns minutos.",
   pending_review_manual: "Seu pagamento está em análise manual. Avisamos assim que houver novidade.",
-  processing_error: "Não conseguimos processar esse cartão agora. Confira os dados ou tente outro cartão — se persistir, finalize pelo WhatsApp.",
+  processing_error: "Não conseguimos processar esse pagamento agora. Tente novamente em instantes ou escolha outra forma de pagamento — se persistir, finalize pelo WhatsApp.",
   waiting_transfer: "Escaneie o QR Code ou copie o código Pix abaixo para concluir o pagamento."
 };
 
@@ -86,6 +86,44 @@ function friendlyMessage(category, statusDetail) {
   if (category === "approved") return "Pagamento aprovado!";
   if (category === "pending") return "Pagamento em análise. Avisamos assim que houver novidade.";
   return "Pagamento recusado. Tente outro cartão ou finalize pelo WhatsApp.";
+}
+
+/* ==========================================================================
+   Monta a resposta pro front a partir dos campos de uma order da Mercado
+   Pago — usado tanto na criação bem-sucedida (2xx, order em `data`) quanto
+   quando a Mercado Pago devolve HTTP 402 com a order (criada, mas com a
+   transação recusada/falha) aninhada em `data.data`. Nos dois casos a forma
+   dos campos relevantes (status/status_detail/payment_method) é a mesma.
+   ========================================================================== */
+function buildOrderResponse(orderData, totals, isPix) {
+  const payment = orderData.transactions && orderData.transactions.payments && orderData.transactions.payments[0];
+  const status = (payment && payment.status) || orderData.status;
+  const statusDetail = payment && payment.status_detail;
+  const category = categorizeStatus(status);
+
+  console.log("Order:", { orderId: orderData.id, status, statusDetail, category, isPix });
+
+  /* Pix aprovado só depois que o cliente paga de verdade (assíncrono) — a
+     resposta da criação da order traz o QR Code/copia-e-cola pro cliente
+     pagar; a confirmação em si chega depois via api/webhook.js. */
+  const pixPaymentMethod = payment && payment.payment_method;
+  const pix = (isPix && pixPaymentMethod && pixPaymentMethod.qr_code)
+    ? {
+        qrCode: pixPaymentMethod.qr_code,
+        qrCodeBase64: pixPaymentMethod.qr_code_base64,
+        ticketUrl: pixPaymentMethod.ticket_url
+      }
+    : null;
+
+  /* js/checkout-brick.js só reconhece "approved"/"in_process" — traduzimos
+     o status cru da API de Orders (processed/created/processing/failed/
+     etc.) pra esse vocabulário aqui, uma vez só. */
+  return {
+    status: category === "approved" ? "approved" : category === "pending" ? "in_process" : "rejected",
+    message: friendlyMessage(category, statusDetail),
+    pix: pix,
+    totals: totals
+  };
 }
 
 /* ==========================================================================
@@ -248,37 +286,23 @@ export default async function handler(req, res) {
          log da Vercel trunca objetos em profundidade 2 ("[Object]"),
          escondendo justamente o array `errors[]` que tem o motivo real. */
       console.error("Mercado Pago Orders API error: status=" + mpRes.status + " body=" + JSON.stringify(data));
+
+      /* A Orders API pode devolver HTTP 402 com a order de verdade — já
+         criada, mas com a transação recusada/falha — aninhada em
+         `data.data` (formato diferente da resposta de sucesso, que traz os
+         campos direto na raiz). Nesse caso queremos mostrar o motivo real
+         (status_detail) pro cliente, não um erro genérico de requisição —
+         isso só acontece em falha de pagamento de verdade, não em erro de
+         schema (400), que não vem com esse `data.data`. */
+      const failedOrder = data && data.data && data.data.transactions;
+      if (failedOrder) {
+        return res.status(200).json(buildOrderResponse(data.data, totals, isPix));
+      }
+
       return res.status(502).json({ message: "Não foi possível processar o pagamento. Tente novamente ou finalize pelo WhatsApp." });
     }
 
-    const payment = data.transactions && data.transactions.payments && data.transactions.payments[0];
-    const status = (payment && payment.status) || data.status;
-    const statusDetail = payment && payment.status_detail;
-    const category = categorizeStatus(status);
-
-    console.log("Order criada:", { orderId: data.id, status, statusDetail, category, isPix });
-
-    /* Pix aprovado só depois que o cliente paga de verdade (assíncrono) — a
-       resposta da criação da order traz o QR Code/copia-e-cola pro cliente
-       pagar; a confirmação em si chega depois via api/webhook.js. */
-    const pixPaymentMethod = payment && payment.payment_method;
-    const pix = (isPix && pixPaymentMethod && pixPaymentMethod.qr_code)
-      ? {
-          qrCode: pixPaymentMethod.qr_code,
-          qrCodeBase64: pixPaymentMethod.qr_code_base64,
-          ticketUrl: pixPaymentMethod.ticket_url
-        }
-      : null;
-
-    /* js/checkout-brick.js só reconhece "approved"/"in_process" — traduzimos
-       o status cru da API de Orders (processed/created/processing/failed/
-       etc.) pra esse vocabulário aqui, uma vez só. */
-    return res.status(200).json({
-      status: category === "approved" ? "approved" : category === "pending" ? "in_process" : "rejected",
-      message: friendlyMessage(category, statusDetail),
-      pix: pix,
-      totals: totals
-    });
+    return res.status(200).json(buildOrderResponse(data, totals, isPix));
   } catch (err) {
     console.error("Falha ao chamar a API do Mercado Pago:", err.message);
     return res.status(500).json({ message: "Erro interno ao processar pagamento." });
