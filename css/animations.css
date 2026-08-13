@@ -137,32 +137,25 @@
   z-index: 1;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 450ms var(--ease);
-  /* Cores translúcidas diretas (não mix-blend-mode) para que a madeira
-     apareça de forma consistente tanto sobre seções claras quanto escuras
-     — overlay/multiply somem quase por completo sobre o fundo claro
-     (--color-canvas), que é a maior parte do site. */
-  background:
-    repeating-linear-gradient(
-      91deg,
-      rgba(58, 46, 34, 0.55) 0px,
-      rgba(92, 70, 48, 0.5) 5px,
-      rgba(107, 74, 48, 0.45) 11px,
-      rgba(58, 46, 34, 0.55) 17px,
-      rgba(92, 70, 48, 0.5) 24px
-    ),
-    repeating-radial-gradient(
-      ellipse 360px 160px at 22% 32%,
-      rgba(217, 121, 63, 0.3) 0px,
-      transparent 100px,
-      transparent 240px
-    );
-  -webkit-mask-image: radial-gradient(circle 220px at var(--cursor-x, -9999px) var(--cursor-y, -9999px), #000 0%, transparent 100%);
-  mask-image: radial-gradient(circle 220px at var(--cursor-x, -9999px) var(--cursor-y, -9999px), #000 0%, transparent 100%);
+  transition: opacity 700ms var(--ease);
+  background: url("../assets/fundo.avif") center center / cover no-repeat;
+  /* Raio menor e um único stop suave = borda bem esfumaçada em vez de um
+     círculo com contorno definido; a posição em si (--cursor-x/y) já chega
+     suavizada (lerp) do JS, então o círculo "desliza" atrás do cursor em
+     vez de saltar direto pra posição real. */
+  -webkit-mask-image: radial-gradient(circle 130px at var(--cursor-x, -9999px) var(--cursor-y, -9999px), #000 0%, transparent 100%);
+  mask-image: radial-gradient(circle 130px at var(--cursor-x, -9999px) var(--cursor-y, -9999px), #000 0%, transparent 100%);
 }
 
 body.wood-reveal-active #wood-reveal {
-  opacity: 1;
+  opacity: 0.88;
+}
+
+/* "Discreto" — o JS liga essa classe quando o elemento embaixo do cursor
+   tem conteúdo de verdade (foto, card, texto, botão) em vez de ser fundo
+   vazio; nessas áreas a madeira quase some, só um traço bem sutil. */
+body.wood-reveal-active.wood-reveal-discreet #wood-reveal {
+  opacity: 0.16;
 }
 
 /* ==========================================================================

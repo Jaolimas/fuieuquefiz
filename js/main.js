@@ -10,11 +10,16 @@
 
   /* ------------------------------------------------------------------
      Cursor wood reveal — camada decorativa fixa injetada em toda página,
-     com uma textura de madeira rústica escondida atrás do fundo atual.
-     O mousemove só atualiza --cursor-x/--cursor-y (custom properties lidas
-     pelo mask-image em css/animations.css); todo o resto — a máscara
-     circular acompanhando o cursor, blend mode, opacidade — é CSS puro.
-     pointer-events:none o tempo todo, então nunca atrapalha cliques.
+     com a foto assets/fundo.avif (madeira rústica) escondida atrás do
+     fundo atual, revelada num círculo que segue o cursor com um pouco de
+     atraso (lerp a cada frame, em vez de pular direto pra posição real —
+     fica bem mais "smooth"). pointer-events:none o tempo todo, então
+     nunca atrapalha cliques.
+
+     Fica discreta (opacidade bem baixa, ver css/animations.css) sempre
+     que o elemento embaixo do cursor tem conteúdo de verdade — foto,
+     card, texto, botão — e "normal" só em áreas realmente vazias do
+     fundo. isOverContent() decide isso a cada frame via elementFromPoint.
      ------------------------------------------------------------------ */
   if (!prefersReducedMotion) {
     var woodReveal = document.createElement("div");
@@ -22,25 +27,52 @@
     woodReveal.setAttribute("aria-hidden", "true");
     document.body.appendChild(woodReveal);
 
-    var cursorRafPending = false;
-    var cursorX = 0;
-    var cursorY = 0;
+    var targetX = 0;
+    var targetY = 0;
+    var smoothX = 0;
+    var smoothY = 0;
+    var cursorLoopRunning = false;
 
-    var applyCursorPosition = function () {
-      cursorRafPending = false;
-      document.documentElement.style.setProperty("--cursor-x", cursorX + "px");
-      document.documentElement.style.setProperty("--cursor-y", cursorY + "px");
+    var CONTENT_TAGS = { IMG: 1, SVG: 1, BUTTON: 1, INPUT: 1, A: 1, SELECT: 1, TEXTAREA: 1 };
+
+    var isOverContent = function (el) {
+      if (!el || el === document.body || el === document.documentElement) return false;
+      var cs = window.getComputedStyle(el);
+      if (cs.backgroundImage && cs.backgroundImage !== "none") return true;
+      if (CONTENT_TAGS[el.tagName]) return true;
+      /* Só considera texto de elementos "folha" (sem filhos) — um wrapper
+         flex/grid vazio (ex: espaço entre pills de filtro) tem textContent
+         não-vazio por causa dos FILHOS dele, mas o próprio vão entre eles
+         continua sendo fundo vazio. */
+      if (el.children.length === 0 && el.textContent && el.textContent.trim().length > 0) return true;
+      return false;
+    };
+
+    var cursorTick = function () {
+      /* Suaviza a posição em vez de seguir o mouse 1:1 — o círculo "desliza"
+         atrás do cursor com um pequeno atraso. */
+      smoothX += (targetX - smoothX) * 0.12;
+      smoothY += (targetY - smoothY) * 0.12;
+      document.documentElement.style.setProperty("--cursor-x", smoothX + "px");
+      document.documentElement.style.setProperty("--cursor-y", smoothY + "px");
+
+      var elUnderCursor = document.elementFromPoint(smoothX, smoothY);
+      document.body.classList.toggle("wood-reveal-discreet", isOverContent(elUnderCursor));
+
+      if (cursorLoopRunning) window.requestAnimationFrame(cursorTick);
     };
 
     document.addEventListener(
       "mousemove",
       function (e) {
-        cursorX = e.clientX;
-        cursorY = e.clientY;
+        targetX = e.clientX;
+        targetY = e.clientY;
         document.body.classList.add("wood-reveal-active");
-        if (!cursorRafPending) {
-          cursorRafPending = true;
-          window.requestAnimationFrame(applyCursorPosition);
+        if (!cursorLoopRunning) {
+          cursorLoopRunning = true;
+          smoothX = targetX;
+          smoothY = targetY;
+          window.requestAnimationFrame(cursorTick);
         }
       },
       { passive: true }
@@ -48,6 +80,7 @@
 
     document.addEventListener("mouseleave", function () {
       document.body.classList.remove("wood-reveal-active");
+      cursorLoopRunning = false; /* para o loop rAF — não fica rodando com o mouse fora da página */
     });
   }
 
