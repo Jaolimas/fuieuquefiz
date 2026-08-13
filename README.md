@@ -36,7 +36,10 @@ fuieuquefiz/
 ├── api/
 │   ├── create-order.js        → Recalcula o total e cria a cobrança na API de Orders do Mercado Pago
 │   ├── public-config.js       → Expõe MP_PUBLIC_KEY (não secreta) para o checkout.html montar o Brick
+│   ├── send-receipt.js        → Envia o resumo do pedido por e-mail (Resend), recalculando os valores
 │   └── webhook.js             → Recebe notificações do Mercado Pago, valida a assinatura (x-signature)
+├── lib/
+│   └── whatsapp.js            → Avisa a loja no WhatsApp Business (Cloud API) quando um pedido é pago — não é rota, é módulo importado por api/create-order.js e api/webhook.js
 ├── css/
 │   ├── tokens.css            → Única fonte de verdade para cores, tipografia, espaçamento
 │   ├── base.css               → Reset e defaults do documento
@@ -138,8 +141,29 @@ Configure na Vercel (Project Settings → Environment Variables) — **nunca em 
 | `MP_WEBHOOK_SECRET` | Mesma aplicação → aba **Webhooks** → "Configurar notificação" → revelar a chave secreta gerada ali |
 | `RESEND_API_KEY` | [resend.com/api-keys](https://resend.com/api-keys) → criar API key (secreta) |
 | `RESEND_FROM_EMAIL` | Opcional — padrão é `"FuiEuQueFiz <onboarding@resend.dev>"` (só funciona pro próprio e-mail da conta Resend); depois de verificar domínio próprio, troque por um remetente desse domínio |
+| `WHATSAPP_ACCESS_TOKEN` | Opcional — [developers.facebook.com](https://developers.facebook.com) → app → produto WhatsApp → Meta Business Suite → System Users → gerar token permanente (secreta) |
+| `WHATSAPP_PHONE_NUMBER_ID` | Mesmo app → produto WhatsApp → "ID do número de telefone" (não é o número em si) |
+| `WHATSAPP_NOTIFY_TO` | Número que deve receber os avisos de pedido pago (com código do país, ex: `5511999999999`, sem espaços/símbolos) |
+| `WHATSAPP_TEMPLATE_NAME` | Opcional — padrão `"novo_pedido"`; precisa ser o nome exato de um template aprovado no Meta Business Manager |
 
 Depois de salvar, redeploy o projeto (qualquer alteração de variável de ambiente pede um novo deploy para valer).
+
+### Avisar a loja no WhatsApp Business quando um pedido é pago
+
+Além do checkout via WhatsApp manual (o cliente monta a lista e você combina tudo por lá), o site também pode **avisar automaticamente o número da loja** assim que um pedido é pago — cartão aprova na hora (`api/create-order.js`), Pix confirma depois, de forma assíncrona (`api/webhook.js`). A lógica de envio está isolada em `lib/whatsapp.js`.
+
+Isso usa a **API oficial do WhatsApp Business (Cloud API, da Meta)** — diferente do link `wa.me` usado no resto do site, essa parte manda mensagem "de dentro pra fora" (a loja avisando a si mesma), então a Meta exige um **template pré-aprovado** (não dá pra mandar texto livre). Passos, todos fora deste repositório:
+
+1. Criar um app em [developers.facebook.com](https://developers.facebook.com), tipo "Negócios", e adicionar o produto **WhatsApp**.
+2. Registrar um número na Cloud API — pode ser um número novo só pra isso, ou migrar um que você já usa (nesse caso ele sai do WhatsApp Business App comum e passa a só funcionar pela API).
+3. Verificar o negócio no Meta Business Manager (sem isso o número fica com limite baixo de mensagens/dia).
+4. Gerar um token permanente via **System User** (o token temporário que a Meta dá de início expira em 24h — não serve pra produção).
+5. Criar um **template de mensagem** (Meta Business Manager → WhatsApp Manager → Templates), categoria "Utilidade", com um único parâmetro de texto no corpo — ex: nome `novo_pedido`, corpo `"{{1}}"` ou `"Novo pedido no site: {{1}}"`. Aguardar aprovação (geralmente rápida pra templates simples de utilidade).
+6. Configurar as 4 variáveis `WHATSAPP_*` da tabela acima na Vercel.
+
+⚠️ O aviso de **Pix pago** (`api/webhook.js`) ainda não foi testado contra uma notificação real — o `type` da query string e o `status` retornado por `GET /v1/payments/{id}` para um pagamento criado via API de Orders precisam ser conferidos no primeiro teste de verdade (ver comentário no topo do arquivo). O aviso de **cartão aprovado** (`api/create-order.js`) usa o mesmo fluxo já testado do resto da integração de pagamento.
+
+Sem essas variáveis configuradas, nada quebra — a notificação é só pulada (loga um aviso nos logs da Vercel) e o pagamento continua funcionando normalmente.
 
 ### Configurar o webhook no painel do Mercado Pago
 

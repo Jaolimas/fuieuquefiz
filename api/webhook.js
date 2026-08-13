@@ -27,9 +27,48 @@
 
    O Mercado Pago exige resposta 200/201 em até 22 segundos — por isso essa
    função só valida e loga, sem chamadas lentas.
+
+   Aviso de Pix pago no WhatsApp Business (lib/whatsapp.js): como o Pix só
+   confirma de forma assíncrona (ao contrário do cartão, que api/create-
+   order.js já avisa na hora), é aqui que isso acontece — busca o pagamento
+   na Mercado Pago pelo id que veio na notificação e, se estiver pago,
+   dispara o aviso. Só o valor total, não os itens — esta versão do site
+   não persiste o carrinho em lugar nenhum, então não tem como saber quais
+   peças eram depois que a página fecha.
+
+   IMPORTANTE — ainda não testado contra um webhook real de Pix pago: o
+   valor exato de `type` na query string e o `status` retornado por
+   GET /v1/payments/{id} para um pagamento criado via API de Orders
+   precisam ser conferidos no primeiro teste de verdade (ver os logs da
+   Vercel). Ajuste notifyIfPaid() abaixo se vier diferente do esperado.
    ========================================================================== */
 
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { notifyWhatsApp } from "../lib/whatsapp.js";
+
+async function notifyIfPaid(paymentId) {
+  const accessToken = process.env.MP_ACCESS_TOKEN;
+  if (!accessToken) return;
+
+  const mpRes = await fetch("https://api.mercadopago.com/v1/payments/" + paymentId, {
+    headers: { Authorization: "Bearer " + accessToken }
+  });
+
+  if (!mpRes.ok) {
+    console.error("Falha ao buscar pagamento " + paymentId + " na Mercado Pago: status=" + mpRes.status);
+    return;
+  }
+
+  const payment = await mpRes.json();
+
+  /* "approved" é o status da API legada de Payments, que é o que esse
+     GET devolve mesmo pra pagamentos criados via API de Orders — não
+     confirmado ainda contra um Pix pago de verdade. */
+  if (payment.status !== "approved") return;
+
+  const totalText = "R$ " + Number(payment.transaction_amount || 0).toLocaleString("pt-BR");
+  await notifyWhatsApp("Pix pago no site! Total: " + totalText + " (pagamento " + paymentId + ")");
+}
 
 function parseXSignature(header) {
   const parts = String(header || "").split(",");
@@ -86,6 +125,16 @@ export default async function handler(req, res) {
      evento), nunca dados de pagador/cartão. */
   const type = req.query && req.query.type;
   console.log("Webhook Mercado Pago validado:", { type, dataId });
+
+  /* Best-effort: nunca deixa uma falha aqui derrubar a resposta 200 pro
+     Mercado Pago (senão ele fica reenviando a mesma notificação). */
+  if (dataId) {
+    try {
+      await notifyIfPaid(dataId);
+    } catch (err) {
+      console.error("Falha ao processar notificação de pagamento:", err.message);
+    }
+  }
 
   return res.status(200).end();
 }

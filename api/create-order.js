@@ -12,6 +12,10 @@
    `qr_code`), mas o pagamento só é confirmado de fato depois, quando o
    cliente paga pelo app do banco — a confirmação chega via api/webhook.js.
 
+   Cartão aprovado na hora também dispara um aviso pra loja no WhatsApp
+   Business (lib/whatsapp.js, ver ali os detalhes/variáveis de ambiente
+   próprias) — Pix avisa depois, em api/webhook.js, quando confirmado.
+
    Variáveis de ambiente necessárias (Vercel → Environment Variables):
      MP_ACCESS_TOKEN — Access Token secreto (mesmo já usado antes).
 
@@ -31,6 +35,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
+import { notifyWhatsApp } from "../lib/whatsapp.js";
 
 /* ==========================================================================
    Tradução de status_detail para mensagens claras em português.
@@ -88,6 +93,18 @@ function friendlyMessage(category, statusDetail) {
   return "Pagamento recusado. Tente outro cartão ou finalize pelo WhatsApp.";
 }
 
+/* Texto simples pro aviso de WhatsApp — "2x Mesa de Centro com Lareira,
+   1x Banco Ferro A — Total: R$ 4.500". Só descritivo, não afeta cobrança. */
+function buildOrderSummaryText(items, totals) {
+  const lines = (items || []).map(function (it) {
+    const qty = (it && it.qty) || 1;
+    const name = (it && it.name) || (it && it.slug) || "Peça";
+    return qty + "x " + name;
+  });
+  const totalText = "R$ " + totals.total.toLocaleString("pt-BR");
+  return "Novo pedido pago no site! " + lines.join(", ") + " — Total: " + totalText;
+}
+
 /* ==========================================================================
    Monta a resposta pro front a partir dos campos de uma order da Mercado
    Pago — usado tanto na criação bem-sucedida (2xx, order em `data`) quanto
@@ -95,7 +112,7 @@ function friendlyMessage(category, statusDetail) {
    transação recusada/falha) aninhada em `data.data`. Nos dois casos a forma
    dos campos relevantes (status/status_detail/payment_method) é a mesma.
    ========================================================================== */
-function buildOrderResponse(orderData, totals, isPix) {
+async function buildOrderResponse(orderData, totals, isPix, items) {
   const payment = orderData.transactions && orderData.transactions.payments && orderData.transactions.payments[0];
   const status = (payment && payment.status) || orderData.status;
   const statusDetail = payment && payment.status_detail;
@@ -114,6 +131,13 @@ function buildOrderResponse(orderData, totals, isPix) {
         ticketUrl: pixPaymentMethod.ticket_url
       }
     : null;
+
+  /* Cartão aprova na hora — já dá pra avisar a loja pelo WhatsApp aqui.
+     Pix não: confirma depois, de forma assíncrona — o aviso de Pix pago
+     acontece em api/webhook.js, quando a Mercado Pago notificar. */
+  if (category === "approved" && !isPix) {
+    await notifyWhatsApp(buildOrderSummaryText(items, totals));
+  }
 
   /* js/checkout-brick.js só reconhece "approved"/"in_process" — traduzimos
      o status cru da API de Orders (processed/created/processing/failed/
@@ -296,13 +320,13 @@ export default async function handler(req, res) {
          schema (400), que não vem com esse `data.data`. */
       const failedOrder = data && data.data && data.data.transactions;
       if (failedOrder) {
-        return res.status(200).json(buildOrderResponse(data.data, totals, isPix));
+        return res.status(200).json(await buildOrderResponse(data.data, totals, isPix, items));
       }
 
       return res.status(502).json({ message: "Não foi possível processar o pagamento. Tente novamente ou finalize pelo WhatsApp." });
     }
 
-    return res.status(200).json(buildOrderResponse(data, totals, isPix));
+    return res.status(200).json(await buildOrderResponse(data, totals, isPix, items));
   } catch (err) {
     console.error("Falha ao chamar a API do Mercado Pago:", err.message);
     return res.status(500).json({ message: "Erro interno ao processar pagamento." });
