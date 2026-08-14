@@ -2,9 +2,9 @@
 
 Este arquivo reúne prompts prontos para colar no Higgsfield (ou ferramenta de geração de vídeo/imagem por IA equivalente) para produzir a fotografia e o vídeo reais que devem, no futuro, substituir os placeholders visuais atuais do site.
 
-**Atualização (2026-08-12):** as duas partes deste arquivo hoje descrevem histórico, não o estado atual do site:
+**Atualização (2026-08-13):** as duas partes deste arquivo hoje descrevem histórico, não o estado atual do site:
 - **Parte B (fotos de produto):** os 15 produtos atuais do catálogo (`js/products.js`) já têm foto real em `assets/products/`, sem gradiente placeholder — mas as fotos usadas vieram de outra sessão de geração de imagem (fora do fluxo Higgsfield descrito aqui), não pelos prompts listados abaixo. Os prompts continuam válidos como referência de estilo caso queiram gerar fotos novas.
-- **Parte A (vídeo hero de rolagem):** o vídeo deixou de ser usado no hero — `index.html`/`js/scroll-morph.js` hoje mostram um **carrossel de fotos reais do catálogo** (mesmo mecanismo de scroll travado, ver README.md seção "(d)"). Os vídeos gerados (v1/v2/v3, abaixo) continuam em `assets/scroll-video/`, sem uso, caso queiram reaproveitar o conceito em outra seção do site.
+- **Parte A (vídeo hero de rolagem):** o vídeo deixou de ser usado no hero. Depois virou um carrossel de fotos reais do catálogo com scroll travado, e esse carrossel também foi aposentado — `index.html`/`js/style-quiz.js` hoje mostram um **quiz de estilo** que recomenda uma peça (ver README.md seção "(d)"). Os vídeos gerados (v1/v2/v3, abaixo) continuam em `assets/scroll-video/`, sem uso, caso queiram reaproveitar o conceito em outra seção do site.
 
 ---
 

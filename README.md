@@ -24,7 +24,7 @@ npx serve .
 
 ```
 fuieuquefiz/
-├── index.html              → Home (hero, vitrine de peças em carrossel de scroll travado, destaques, sustentabilidade)
+├── index.html              → Home (hero, quiz de estilo que recomenda uma peça, destaques, sustentabilidade)
 ├── catalogo.html            → Catálogo completo (15 peças, filtro por categoria, ordenação)
 ├── produto.html              → Página de detalhe de produto (?slug=... na URL)
 ├── sobre.html                → Nossa história / Nossa madeira / Processo / Trabalhe conosco
@@ -44,7 +44,7 @@ fuieuquefiz/
 │   ├── tokens.css            → Única fonte de verdade para cores, tipografia, espaçamento
 │   ├── base.css               → Reset e defaults do documento
 │   ├── components.css          → Todos os componentes visuais (nav, footer, cards, botões, etc.)
-│   └── animations.css           → Reveal-on-scroll, carrossel de scroll travado, motion
+│   └── animations.css           → Reveal-on-scroll, madeira revelada pelo cursor, motion
 ├── js/
 │   ├── products.js             → Dados completos do catálogo (descrição, materiais, imagem, preço de exibição)
 │   ├── cart.js                 → Carrinho (localStorage) + checkout via WhatsApp — roda em toda página
@@ -52,9 +52,9 @@ fuieuquefiz/
 │   ├── catalog.js               → Só em catalogo.html — grid filtrável/ordenável
 │   ├── product-page.js           → Só em produto.html — monta a página a partir do ?slug=
 │   ├── checkout-brick.js         → Só em checkout.html — monta o Payment Brick (cartão + Pix) e envia pro backend
-│   └── scroll-morph.js            → Só em index.html — controla o carrossel de peças em destaque via scroll travado
+│   └── style-quiz.js              → Só em index.html — quiz de 3 perguntas que recomenda uma peça do catálogo
 ├── assets/
-│   └── scroll-video/          → Vídeos de versões anteriores do hero (não usados hoje — hero agora é o carrossel de fotos em index.html); mantidos caso queiram reaproveitar em outra seção
+│   └── scroll-video/          → Vídeos de versões anteriores do hero (não usados hoje — hero foi substituído por fotos e depois pelo quiz de estilo em index.html); mantidos caso queiram reaproveitar em outra seção
 └── HIGGSFIELD_PROMPTS.md          → Prompts prontos usados para gerar as fotos reais dos produtos no Higgsfield
 ```
 
@@ -85,11 +85,13 @@ Dica: buscar por `5500000000000` em todos os arquivos do projeto (ex: `Ctrl+Shif
 
 Os 15 produtos do catálogo (`js/products.js`) já usam foto real (`assets/products/SLUG.png`), sem placeholder de gradiente — `js/catalog.js` e `js/product-page.js` montam `<img>` direto a partir do campo `image` de cada produto (`productShotHTML()` em `js/products.js`). Pra trocar a foto de um produto, basta substituir o arquivo em `assets/products/` (mesmo nome) ou apontar o campo `image` pra outro arquivo — nada de código pra mexer.
 
-### (d) Vitrine de peças no hero (carrossel de scroll travado) — ✅ já feito
+### (d) Quiz de estilo no hero — ✅ já feito
 
-A seção `#sob-a-luz` em `index.html` mostra um carrossel com 6 peças reais do catálogo (fotos de `assets/products/`), cada uma um link pra sua página de produto. `js/scroll-morph.js` pina a seção (`position: sticky`) e usa a posição do scroll dentro dela pra decidir qual `.morph-carousel-item` fica visível — mesmo mecanismo de "scroll travado" da versão anterior (que usava um vídeo único), só que agora dirigido por posição/índice de slide em vez de `video.currentTime`.
+A seção `#quiz-estilo` em `index.html` roda um quiz de 3 perguntas ("que tipo de peça", "qual clima", "qual faixa de investimento") que filtra o array `PRODUCTS` (`js/products.js`) até recomendar 1-2 peças do catálogo — sem scroll-jacking, sem backend, é só uma seção normal que rola com o resto da página. `js/style-quiz.js` monta cada pergunta/resultado e cuida do "Adicionar à lista".
 
-Pra trocar quais peças aparecem (ou quantas), edite direto o HTML em `index.html` dentro de `#morph-carousel` — cada `<a class="morph-carousel-item">` tem `data-name`/`data-price` (usados pra montar a legenda) e a imagem/link do produto; não precisa tocar em `scroll-morph.js`. Os vídeos de versões anteriores do hero ficam em `assets/scroll-video/`, sem uso atualmente — ver `HIGGSFIELD_PROMPTS.md` (Parte A) se quiserem reaproveitar o conceito de vídeo em outro lugar do site.
+Essa seção já passou por duas versões antes: um vídeo único (aposentado, arquivos em `assets/scroll-video/`) e depois um carrossel de fotos com scroll travado (aposentado também, pra dar lugar a algo mais interativo/pesquisado — o padrão de quiz de descoberta converte melhor que vitrines passivas em marcas DTC). Cada produto em `js/products.js` tem um campo `styleTag` (`"bruto"` / `"estruturado"` / `"escultural"`, curado à mão) usado pela pergunta 2 do quiz — se adicionar um produto novo, vale atribuir um `styleTag` também, senão o quiz só ignora esse filtro pra ele.
+
+Pra mudar as perguntas/opções, edite o array `QUESTIONS` no topo de `js/style-quiz.js` — a lógica de recomendação (`pickRecommendation()`) já lida com qualquer combinação de categoria/preço/estilo que não tenha resultado exato, recuando pro filtro anterior.
 
 ## Como publicar (deploy)
 
