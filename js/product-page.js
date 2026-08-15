@@ -44,8 +44,16 @@
   var state = {
     sizeIndex: 0,
     finishes: {}, /* groupName -> selected option */
-    qty: 1
+    qty: 1,
+    activeImageIndex: 0 /* qual foto da galeria está em destaque (0 = product.image) */
   };
+
+  /* Produtos com mais de uma foto (vários ângulos) têm product.gallery —
+     [imagem principal, ...ângulos extras]. Produtos sem gallery mostram só
+     a foto única de sempre, sem miniaturas. */
+  function galleryImages() {
+    return product.gallery && product.gallery.length ? [product.image].concat(product.gallery) : null;
+  }
 
   finishGroups.forEach(function (group) {
     state.finishes[group.group] = group.options[0];
@@ -119,6 +127,19 @@
     );
   }
 
+  function renderGalleryThumbs(images) {
+    var thumbs = images.map(function (src, i) {
+      var selected = i === state.activeImageIndex ? " is-active" : "";
+      return (
+        '<button type="button" class="pdp-gallery-thumb' + selected + '" data-index="' + i + '" aria-label="Ver foto ' + (i + 1) + ' de ' + images.length + '">' +
+          '<img src="' + src + '" alt="">' +
+        '</button>'
+      );
+    }).join("");
+
+    return '<div class="pdp-gallery-thumbs">' + thumbs + '</div>';
+  }
+
   function renderFinishGroups() {
     return finishGroups.map(function (group) {
       var chips = group.options.map(function (option) {
@@ -140,11 +161,15 @@
   }
 
   function render() {
+    var images = galleryImages();
+    var mainImageSrc = images ? images[state.activeImageIndex] : product.image;
+
     pdpRoot.innerHTML =
       '<div class="pdp-media">' +
         '<div class="product-shot' + productShotClass(product, productIndex) + '">' +
-          productShotHTML(product, productIndex) +
+          (product.image ? '<img src="' + mainImageSrc + '" alt="' + product.name + '" loading="eager">' : productShotHTML(product, productIndex)) +
         '</div>' +
+        (images ? renderGalleryThumbs(images) : '') +
       '</div>' +
       '<div class="pdp-info">' +
         '<h1 class="pdp-name">' + product.name + '</h1>' +
@@ -175,6 +200,13 @@
   }
 
   function wireEvents() {
+    pdpRoot.querySelectorAll(".pdp-gallery-thumb").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        state.activeImageIndex = parseInt(btn.getAttribute("data-index"), 10);
+        render();
+      });
+    });
+
     pdpRoot.querySelectorAll('[data-kind="size"]').forEach(function (btn) {
       btn.addEventListener("click", function () {
         state.sizeIndex = parseInt(btn.getAttribute("data-index"), 10);

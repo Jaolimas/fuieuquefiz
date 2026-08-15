@@ -919,6 +919,44 @@
   aspect-ratio: 1 / 1;
 }
 
+/* Galeria de miniaturas — só aparece em produtos com mais de uma foto
+   (product.gallery em js/products.js); clicar troca a foto grande. */
+.pdp-gallery-thumbs {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.pdp-gallery-thumb {
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--color-canvas-alt);
+  opacity: 0.65;
+  transition: opacity 200ms var(--ease), border-color 200ms var(--ease);
+}
+
+.pdp-gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pdp-gallery-thumb:hover {
+  opacity: 0.9;
+}
+
+.pdp-gallery-thumb.is-active {
+  opacity: 1;
+  border-color: var(--color-action);
+}
+
 .pdp-name {
   margin-top: var(--space-lg);
   font-size: var(--text-display-lg);

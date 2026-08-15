@@ -89,6 +89,8 @@ A seção "O que nossos clientes dizem" em `index.html` (logo antes de "Explore 
 
 Os 15 produtos do catálogo (`js/products.js`) já usam foto real (`assets/products/SLUG.png`), sem placeholder de gradiente — `js/catalog.js` e `js/product-page.js` montam `<img>` direto a partir do campo `image` de cada produto (`productShotHTML()` em `js/products.js`). Pra trocar a foto de um produto, basta substituir o arquivo em `assets/products/` (mesmo nome) ou apontar o campo `image` pra outro arquivo — nada de código pra mexer.
 
+**Galeria de fotos (vários ângulos):** 8 produtos têm um campo extra `gallery` em `js/products.js` — um array com fotos adicionais do mesmo móvel (`["assets/products/SLUG-2.jpg", "assets/products/SLUG-3.jpg", ...]`). Quando `gallery` existe, `produto.html` mostra miniaturas clicáveis embaixo da foto principal (`js/product-page.js`, `renderGalleryThumbs()`); sem `gallery`, o produto mostra só a foto única, como antes. Pra adicionar mais ângulos a um produto, solte os arquivos em `assets/products/` e acrescente os caminhos no array `gallery` — não precisa mexer no JS.
+
 ### (e) Quiz de estilo no hero — ✅ já feito
 
 A seção `#quiz-estilo` em `index.html` roda um quiz de 3 perguntas ("que tipo de peça", "qual clima", "qual faixa de investimento") que filtra o array `PRODUCTS` (`js/products.js`) até recomendar 1-2 peças do catálogo — sem scroll-jacking, sem backend, é só uma seção normal que rola com o resto da página. `js/style-quiz.js` monta cada pergunta/resultado e cuida do "Adicionar à lista".
