@@ -62,7 +62,7 @@ Ordem de carregamento dos scripts, em todas as páginas: `products.js` → `cart
 
 ## Antes de vender de verdade
 
-O site está funcionalmente pronto, mas ainda tem duas coisas de config que **precisam** ser trocadas antes de divulgar o link para clientes reais (fotografia dos produtos e vitrine do hero já estão feitas — itens (c) e (d) abaixo, mantidos como referência):
+O site está funcionalmente pronto, mas ainda tem algumas coisas de config/conteúdo que **precisam** ser trocadas antes de divulgar o link para clientes reais (fotografia dos produtos e vitrine do hero já estão feitas — itens (d) e (e) abaixo, mantidos como referência):
 
 ### (a) Número de WhatsApp placeholder
 
@@ -81,11 +81,15 @@ Dica: buscar por `5500000000000` em todos os arquivos do projeto (ex: `Ctrl+Shif
 
 `contato.html` usa `contato@fuieuquefiz.com.br` como e-mail de suporte (botão "Enviar e-mail", marcado com `TODO` no HTML). Troque pelo e-mail real de atendimento da loja.
 
-### (c) Fotografia real dos produtos — ✅ já feito
+### (c) Depoimentos de exemplo
+
+A seção "O que nossos clientes dizem" em `index.html` (logo antes de "Explore o catálogo completo") tem 3 depoimentos de exemplo, fictícios, marcados com um comentário `TODO` no HTML — troque pelos depoimentos reais de clientes (com autorização deles pra usar nome/avaliação no site) antes de divulgar a página. Cada `<blockquote class="testimonial-card">` tem a nota em estrelas, o texto e a assinatura (nome + cidade) — é só editar o texto direto no HTML, não precisa mexer no CSS/JS.
+
+### (d) Fotografia real dos produtos — ✅ já feito
 
 Os 15 produtos do catálogo (`js/products.js`) já usam foto real (`assets/products/SLUG.png`), sem placeholder de gradiente — `js/catalog.js` e `js/product-page.js` montam `<img>` direto a partir do campo `image` de cada produto (`productShotHTML()` em `js/products.js`). Pra trocar a foto de um produto, basta substituir o arquivo em `assets/products/` (mesmo nome) ou apontar o campo `image` pra outro arquivo — nada de código pra mexer.
 
-### (d) Quiz de estilo no hero — ✅ já feito
+### (e) Quiz de estilo no hero — ✅ já feito
 
 A seção `#quiz-estilo` em `index.html` roda um quiz de 3 perguntas ("que tipo de peça", "qual clima", "qual faixa de investimento") que filtra o array `PRODUCTS` (`js/products.js`) até recomendar 1-2 peças do catálogo — sem scroll-jacking, sem backend, é só uma seção normal que rola com o resto da página. `js/style-quiz.js` monta cada pergunta/resultado e cuida do "Adicionar à lista".
 

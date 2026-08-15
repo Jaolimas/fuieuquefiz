@@ -308,6 +308,21 @@
   max-width: 26ch;
 }
 
+.footer-instagram {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-md);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--color-ink-80);
+  transition: color 200ms var(--ease);
+}
+
+.footer-instagram:hover {
+  color: var(--color-action);
+}
+
 .footer-col-title {
   font-size: 14px;
   font-weight: 600;
@@ -374,6 +389,56 @@
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
+}
+
+/* ==========================================================================
+   Depoimentos (index.html, seção "O que nossos clientes dizem")
+   ========================================================================== */
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+  margin-top: var(--space-xl);
+}
+
+@media (min-width: 700px) {
+  .testimonial-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.testimonial-card {
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin: 0;
+}
+
+.testimonial-stars {
+  color: var(--color-action);
+  font-size: var(--text-caption);
+  letter-spacing: 2px;
+  margin-bottom: var(--space-sm);
+}
+
+.testimonial-quote {
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-ink);
+}
+
+.testimonial-author {
+  display: block;
+  margin-top: var(--space-md);
+  font-size: var(--text-caption-strong);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.testimonial-location {
+  font-weight: 400;
+  color: var(--color-ink-48);
 }
 
 /* ==========================================================================
