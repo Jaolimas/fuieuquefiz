@@ -8,74 +8,46 @@
    ========================================================================== */
 
 .btn {
-  /* "Madeira deformada" — formato orgânico tipo fatia de tronco (radius
-     assimétrico em vez do pill reto) + a foto de madeira real do site
-     (assets/fundo.avif, mesma do efeito de cursor) como textura de fundo,
-     num ::before separado (ver abaixo) — precisa ser um elemento à parte
-     porque o texto tem que ficar sempre legível, e cada botão recorta um
-     pedaço diferente da foto dependendo da largura (background-
-     size:cover); um filter:brightness() no ::before escurece a foto o
-     bastante pra garantir contraste em QUALQUER trecho recortado, sem
-     depender de sorte de onde a área clara/escura da imagem cai.
-     position:relative + isolation:isolate fazem o ::before (z-index:-1)
-     ficar contido dentro do próprio botão; overflow:hidden recorta a foto
-     retangular na forma orgânica do border-radius. */
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
   font: 400 var(--text-body)/1 var(--font-text);
-  border-radius: 61% 39% 52% 48% / 41% 44% 56% 59%;
-  padding: 14px 28px;
+  border-radius: var(--radius-pill);
+  padding: 11px 22px;
   border: 0;
   cursor: pointer;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(15, 9, 4, 0.6);
-  transition: transform var(--duration) var(--ease), opacity var(--duration) var(--ease), border-radius 600ms var(--ease);
+  transition: transform var(--duration) var(--ease), opacity var(--duration) var(--ease);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   min-height: 44px;
   min-width: 44px;
-  box-shadow: inset 0 0 18px rgba(20, 12, 6, 0.32);
 }
 
-.btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image: url("../assets/fundo.avif");
-  background-size: cover;
-  background-position: center;
-  filter: brightness(0.55) saturate(1.05);
-}
-
-.btn--primary::before {
-  /* rgba() derived from --color-action #A6491E — verniz mais forte, lê
-     como "o botão principal", mas ainda deixa o veio da madeira passar. */
-  background-image: linear-gradient(rgba(166, 73, 30, 0.5), rgba(166, 73, 30, 0.5)), url("../assets/fundo.avif");
-}
-
-.btn--ghost::before {
-  /* Verniz bem mais fraco que o primary — mais madeira aparecendo, lê
-     como ação secundária sem depender só do contorno. */
-  background-image: linear-gradient(rgba(166, 73, 30, 0.22), rgba(166, 73, 30, 0.22)), url("../assets/fundo.avif");
+.btn--primary {
+  background: var(--color-action);
+  color: #fff;
 }
 
 .btn--ghost {
+  /* rgba() derived from --color-action #A6491E — mais escuro que o fill
+     original (que era só 0.07) porque o texto agora é branco e precisa
+     de contraste; com letra branca, um fundo quase transparente deixava
+     o botão ilegível em seções claras. */
+  background: rgba(166, 73, 30, 0.65);
   color: #fff;
-  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  border: 1.5px solid currentColor;
   font-weight: 600;
 }
 
-.btn--utility::before {
-  background-image: linear-gradient(rgba(20, 15, 10, 0.35), rgba(20, 15, 10, 0.35)), url("../assets/fundo.avif");
+.section--dark .btn--ghost {
+  /* rgba() derived from --color-action-on-dark #D9793F — mesmo motivo. */
+  background: rgba(217, 121, 63, 0.55);
+  color: #fff;
 }
 
 .btn--utility {
-  color: var(--color-on-dark);
-  border-radius: 45% 55% 48% 52% / 52% 45% 55% 48%;
+  background: var(--color-ink);
+  color: #fff;
+  border-radius: var(--radius-sm);
   padding: 8px 15px;
   font-size: var(--text-caption);
   min-height: 44px;
@@ -84,14 +56,11 @@
 .btn--hero {
   font-size: 18px;
   font-weight: 300;
-  padding: 18px 34px;
+  padding: 14px 28px;
 }
 
 .btn:hover {
-  opacity: 0.9;
-  /* Muda pra uma segunda forma orgânica no hover — "madeira viva",
-     reforça a sensação de deformação em vez de um blob parado. */
-  border-radius: 42% 58% 61% 39% / 55% 41% 59% 45%;
+  opacity: 0.85;
 }
 
 .btn:active {
