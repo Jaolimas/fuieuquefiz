@@ -3,6 +3,8 @@
   "products": [
     { "slug": "mesa-de-centro-com-lareira", "price": 2000 },
     { "slug": "par-mesas-fatia-de-tronco", "price": 1200 },
+    { "slug": "mesa-redonda-com-lareira", "price": 2400 },
+    { "slug": "mesa-apoio-sofa-fatia-tronco", "price": 1100 },
     { "slug": "banco-ferro-a", "price": 2500 },
     { "slug": "banco-patio-ripado", "price": 2800 },
     { "slug": "banco-duo-mesa-central", "price": 2500 },
@@ -15,6 +17,8 @@
     { "slug": "trio-de-pedestais", "price": 900 },
     { "slug": "adega-galho-de-arvore", "price": 900 },
     { "slug": "adega-parede-fatia-tronco", "price": 1000 },
-    { "slug": "espelho-fatia-de-tronco", "price": 3200 }
+    { "slug": "espelho-fatia-de-tronco", "price": 3200 },
+    { "slug": "tabuleiro-xadrez-fatia-de-tronco", "price": 1200 },
+    { "slug": "adega-escultural-ondulada", "price": 850 }
   ]
 }

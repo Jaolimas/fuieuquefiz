@@ -19,6 +19,19 @@ const PRODUCTS = [
     description:"Duas fatias de tronco maciço, uma menor que a outra, cada uma sobre pernas finas em ferro hairpin — se encaixam lado a lado ou uma sob a outra, conforme o espaço. Vendidas em par.",
     materials:"Fatia de tronco maciça + pernas hairpin em ferro",
     dimensions:"Maior 45×40cm / menor 35×30cm (Ø×A, varia por peça)", leadTime:"4 a 5 semanas" },
+  { slug:"mesa-redonda-com-lareira", name:"Mesa Redonda com Lareira", category:"Mesas", price:2400, styleTag:"escultural",
+    image:"assets/products/mesa-redonda-com-lareira.png",
+    gallery:["assets/products/mesa-redonda-com-lareira-2.jpg"],
+    short:"Mesa de centro redonda em fatia de tronco sobre base de raiz esculpida, com lareira de mesa a etanol embutida.",
+    description:"Fatia redonda de tronco maciço, anéis de crescimento à mostra, apoiada sobre uma base escultural de raiz nodosa — no centro, uma lareira de mesa a etanol embutida transforma a peça no ponto de encontro da sala. Pernas em ferro hairpin discretas sustentam o conjunto.",
+    materials:"Tronco de madeira maciça + base de raiz esculpida + queimador de etanol embutido em aço",
+    dimensions:"Aprox. Ø 70 × 35 cm (varia por peça, formato natural)", leadTime:"Pronta entrega — peça única disponível" },
+  { slug:"mesa-apoio-sofa-fatia-tronco", name:"Mesa de Apoio Fatia de Tronco para Sofá", category:"Mesas", price:1100, styleTag:"bruto",
+    image:"assets/products/mesa-apoio-sofa-fatia-tronco.jpg",
+    short:"Mesa de apoio esculpida numa única fatia de tronco, encaixa sobre o braço do sofá.",
+    description:"Esculpida numa única peça de madeira maciça, essa mesa de apoio se encaixa sobre o braço do sofá — um lado desce como um gancho, o outro forma a superfície de apoio, com a borda natural do tronco preservada. Perfeita para o café da tarde ou o copo de vinho ao lado do sofá, sem precisar de mesa de centro.",
+    materials:"Fatia de tronco maciça (peça exclusiva, sem reposição idêntica)",
+    dimensions:"Aprox. 25 × 45 × 20 cm (varia por peça, é natural/única)", leadTime:"Pronta entrega — peça única disponível" },
 
   { slug:"banco-ferro-a", name:"Banco Ferro A", category:"Cadeiras & Poltronas", price:2500, styleTag:"estruturado",
     image:"assets/products/banco-ferro-a.png",
@@ -99,7 +112,21 @@ const PRODUCTS = [
     short:"Espelho redondo com moldura maciça em fatia de tronco, anéis de crescimento à mostra.",
     description:"A moldura nasce de uma fatia grossa de tronco, esculpida em formato de anel até revelar o espelho no centro — os anéis de crescimento da madeira ficam completamente à mostra, tornando cada peça única. Feito para pendurar sobre consoles, aparadores ou cômodas de entrada.",
     materials:"Fatia de tronco maciça + espelho",
-    dimensions:"Aprox. 75 × 90 cm (varia por peça, é natural/única)", leadTime:"Pronta entrega — peça única disponível" }
+    dimensions:"Aprox. 75 × 90 cm (varia por peça, é natural/única)", leadTime:"Pronta entrega — peça única disponível" },
+  { slug:"tabuleiro-xadrez-fatia-de-tronco", name:"Tabuleiro de Xadrez Fatia de Tronco", category:"Decoração", price:1200, styleTag:"escultural",
+    image:"assets/products/tabuleiro-xadrez-fatia-de-tronco.png",
+    gallery:["assets/products/tabuleiro-xadrez-fatia-de-tronco-2.png","assets/products/tabuleiro-xadrez-fatia-de-tronco-3.jpg"],
+    short:"Tabuleiro de xadrez esculpido em fatia de tronco de borda natural, com jogo de peças torneadas incluso.",
+    description:"O tabuleiro nasce de uma fatia de tronco de contorno irregular, com as casas do xadrez marcadas em madeiras de tons contrastantes e a borda natural (casca e tudo) preservada ao redor — acompanha jogo completo de peças torneadas em madeira clara e escura. Tanto serve pra jogar quanto de peça decorativa sobre a mesa de centro.",
+    materials:"Fatia de tronco maciça + jogo de xadrez em madeira torneada",
+    dimensions:"Aprox. 45 × 40 cm (varia por peça, é natural/única)", leadTime:"Pronta entrega — peça única disponível" },
+  { slug:"adega-escultural-ondulada", name:"Adega Escultural Ondulada", category:"Decoração", price:850, styleTag:"escultural",
+    image:"assets/products/adega-escultural-ondulada.jpg",
+    gallery:["assets/products/adega-escultural-ondulada-2.jpg"],
+    short:"Adega para 4 garrafas esculpida num único bloco de madeira maciça, em curvas onduladas.",
+    description:"Esculpida a partir de um único bloco de madeira maciça, essa adega dispensa qualquer metal ou encaixe — as curvas onduladas nascem da própria talha, formando quatro berços que sustentam as garrafas na diagonal. Uma peça escultural que funciona tanto guardando vinho quanto vazia, só pela forma.",
+    materials:"Bloco único de madeira maciça (sem metal)",
+    dimensions:"Aprox. 20 × 40 × 18 cm", leadTime:"Pronta entrega — peça única disponível" }
 ];
 
 /* ==========================================================================
