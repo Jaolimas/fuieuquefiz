@@ -82,12 +82,19 @@
           <div class="checkout-summary" aria-label="Resumo do pedido">
             <h2 class="checkout-summary-title">Resumo</h2>
             <div id="checkout-summary-lines"></div>
+
+            <div class="checkout-coupon-row">
+              <input type="text" id="checkout-coupon-input" class="text-input" placeholder="Cupom de desconto" autocomplete="off">
+              <button type="button" class="btn btn--ghost" id="checkout-coupon-apply">Aplicar</button>
+            </div>
+            <p class="checkout-coupon-status" id="checkout-coupon-status" role="status" aria-live="polite"></p>
+
             <div class="price-subtotal-row" id="checkout-subtotal-row" hidden>
               <span>Subtotal</span>
               <span id="checkout-subtotal">R$ 0</span>
             </div>
             <div class="price-discount-row" id="checkout-discount-row" hidden>
-              <span>Desconto (5%)</span>
+              <span id="checkout-discount-label">Desconto</span>
               <span id="checkout-discount">-R$ 0</span>
             </div>
             <div class="checkout-total-row">
@@ -130,7 +137,7 @@
                 <span id="checkout-receipt-subtotal">R$ 0</span>
               </div>
               <div class="price-discount-row" id="checkout-receipt-discount-row" hidden>
-                <span>Desconto (5%)</span>
+                <span id="checkout-receipt-discount-label">Desconto</span>
                 <span id="checkout-receipt-discount">-R$ 0</span>
               </div>
               <div class="checkout-total-row">

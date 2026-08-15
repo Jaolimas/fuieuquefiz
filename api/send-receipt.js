@@ -21,6 +21,11 @@
    nunca reflete um valor que o navegador tenha mandado. `paymentLabel`
    (ex: "Cartão de crédito (Mastercard) em 3x") é só descritivo — não
    afeta o cálculo, por isso não precisa da mesma validação de preço.
+
+   Todo e-mail enviado por aqui também leva uma nota de agradecimento com
+   um cupom de 10% pra próxima compra (OBRIGADO10, ver buildReceiptHtml) —
+   é intencional que isso só apareça pra quem digitar o e-mail pra receber
+   o resumo; não tem menção a esse cupom em nenhum outro lugar do site.
    ========================================================================== */
 
 import { readFileSync } from "node:fs";
@@ -76,16 +81,34 @@ function buildReceiptLines(items, productsMap) {
 /* ==========================================================================
    Regra de brinde + desconto: pedidos que somam R$3.000 ou mais (subtotal,
    antes do desconto) ganham um brinde da FuiEuQueFiz e 5% de desconto no
-   total. Duplicado em js/products.js (computeOrderTotals, exibição) e em
+   total. Cupons dão desconto por código, sem depender do valor do pedido.
+   Duplicado em js/products.js (computeOrderTotals, exibição) e em
    api/create-order.js (cobrança de verdade) — qualquer mudança aqui precisa
    ser replicada nos dois outros lugares.
    ========================================================================== */
 const GIFT_DISCOUNT_THRESHOLD = 3000;
 const GIFT_DISCOUNT_RATE = 0.05;
 
-function applyGiftDiscount(subtotal) {
+const COUPONS = {
+  FAMILIAROSA: { rate: 0.05 },
+  OBRIGADO10: { rate: 0.10 }
+};
+
+function findCoupon(code) {
+  if (!code) return null;
+  const normalized = String(code).trim().toUpperCase();
+  return normalized && COUPONS[normalized] ? { code: normalized, rate: COUPONS[normalized].rate } : null;
+}
+
+function applyGiftDiscount(subtotal, couponCode) {
   const qualifies = subtotal >= GIFT_DISCOUNT_THRESHOLD;
-  const discount = qualifies ? Math.round(subtotal * GIFT_DISCOUNT_RATE * 100) / 100 : 0;
+  const coupon = findCoupon(couponCode);
+
+  let rate = qualifies ? GIFT_DISCOUNT_RATE : 0;
+  if (coupon && coupon.rate > rate) rate = coupon.rate;
+
+  const discount = rate > 0 ? Math.round(subtotal * rate * 100) / 100 : 0;
+
   return {
     subtotal,
     discount,
@@ -129,6 +152,15 @@ function buildReceiptHtml(lines, totals, paymentLabel) {
     ? '<p style="color:#A6491E;font-weight:bold;font-size:13px;margin-top:16px;">🎁 Seu pedido ganhou um brinde da FuiEuQueFiz e 5% de desconto!</p>'
     : '';
 
+  /* Agradecimento + cupom de 10% pra próxima compra — só aparece aqui, no
+     e-mail, nunca divulgado no site (o cliente só sabe se receber esse
+     e-mail, ou seja, se ele mesmo digitou o e-mail pra receber o resumo). */
+  const thankYouNote =
+    '<div style="margin-top:24px;padding:16px;background:#F1ECE4;border-radius:11px;text-align:center;">' +
+      '<p style="margin:0 0 6px;font-size:14px;color:#211C17;">Muito obrigado pela sua compra! 🎉</p>' +
+      '<p style="margin:0;font-size:14px;color:#4A4038;">Como agradecimento, você ganhou <strong>10% de desconto</strong> na sua próxima compra na FuiEuQueFiz — é só usar o cupom <strong style="color:#A6491E;">OBRIGADO10</strong> no checkout.</p>' +
+    '</div>';
+
   return (
     '<div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;color:#211C17;">' +
       '<h1 style="font-size:20px;margin-bottom:4px;">Resumo do seu pedido — FuiEuQueFiz</h1>' +
@@ -143,6 +175,7 @@ function buildReceiptHtml(lines, totals, paymentLabel) {
       '</table>' +
       giftNote +
       (paymentLabel ? '<p style="color:#4A4038;font-size:13px;margin-top:16px;">Forma de pagamento: ' + escapeHtml(paymentLabel) + '</p>' : '') +
+      thankYouNote +
     '</div>'
   );
 }
@@ -174,6 +207,7 @@ export default async function handler(req, res) {
      cobrado já foi validado à parte, em create-order.js. Trunca porque
      esse endpoint é público; nada além de escapeHtml() confia nesse texto. */
   const paymentLabel = body && typeof body.paymentLabel === "string" ? body.paymentLabel.trim().slice(0, 80) : "";
+  const couponCode = body && typeof body.couponCode === "string" ? body.couponCode : null;
 
   if (!EMAIL_RE.test(email)) {
     return res.status(400).json({ message: "Digite um e-mail válido." });
@@ -187,7 +221,7 @@ export default async function handler(req, res) {
     const productsMap = loadProductsMap();
     const built = buildReceiptLines(items, productsMap);
     lines = built.lines;
-    totals = applyGiftDiscount(built.subtotal);
+    totals = applyGiftDiscount(built.subtotal, couponCode);
   } catch (err) {
     return res.status(400).json({ message: "Não foi possível validar os itens do pedido: " + err.message });
   }

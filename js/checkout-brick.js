@@ -25,7 +25,13 @@
       em payload.result.totals) e um formulário pra receber esse resumo
       por e-mail — ao enviar, chama /api/send-receipt (Resend), que
       recalcula os valores a partir de data/products.json antes de
-      montar o e-mail.
+      montar o e-mail (e sempre inclui uma nota de agradecimento com
+      cupom de 10% pra próxima compra, nunca divulgado no site).
+   7. Cupom de desconto (nunca divulgado no site): aplicar recalcula o
+      total (computeOrderTotals, js/products.js) e remonta o Payment
+      Brick com o novo valor — o código vai junto no POST pra
+      /api/create-order e /api/send-receipt, mas quem decide de verdade
+      se o cupom vale (e por quanto) é sempre o servidor.
    ========================================================================== */
 
 (function () {
@@ -41,8 +47,12 @@
   var subtotalEl = document.getElementById("checkout-subtotal");
   var discountRowEl = document.getElementById("checkout-discount-row");
   var discountEl = document.getElementById("checkout-discount");
+  var discountLabelEl = document.getElementById("checkout-discount-label");
   var totalEl = document.getElementById("checkout-total");
   var giftNoteEl = document.getElementById("checkout-gift-note");
+  var couponInputEl = document.getElementById("checkout-coupon-input");
+  var couponApplyBtn = document.getElementById("checkout-coupon-apply");
+  var couponStatusEl = document.getElementById("checkout-coupon-status");
   var resultEl = document.getElementById("checkout-result");
   var pixEl = document.getElementById("checkout-pix");
   var pixQrEl = document.getElementById("checkout-pix-qr");
@@ -54,6 +64,7 @@
   var receiptSubtotalEl = document.getElementById("checkout-receipt-subtotal");
   var receiptDiscountRowEl = document.getElementById("checkout-receipt-discount-row");
   var receiptDiscountEl = document.getElementById("checkout-receipt-discount");
+  var receiptDiscountLabelEl = document.getElementById("checkout-receipt-discount-label");
   var receiptTotalEl = document.getElementById("checkout-receipt-total");
   var receiptGiftNoteEl = document.getElementById("checkout-receipt-gift-note");
   var receiptPaymentEl = document.getElementById("checkout-receipt-payment");
@@ -63,6 +74,7 @@
   var receiptStatusEl = document.getElementById("checkout-receipt-status");
 
   var currentPaymentLabel = ""; /* preenchido por showReceipt(), lido no envio do e-mail */
+  var appliedCouponCode = null; /* cupom validado (client-side, só pra exibição) — a validação de verdade é sempre em api/create-order.js */
 
   var CARD_BRAND_LABELS = {
     visa: "Visa",
@@ -124,15 +136,27 @@
   function applyTotalsToDom(totals, els, mode) {
     if (els.totalEl) els.totalEl.textContent = formatBRL(totals.total);
 
-    if (els.subtotalRowEl) els.subtotalRowEl.hidden = !totals.qualifies;
+    /* Mostra a linha de subtotal/desconto sempre que houve desconto —
+       antes só dependia de "qualifies" (bateu R$3.000), mas agora um
+       cupom pode dar desconto sem bater o valor mínimo. */
+    var hasDiscount = totals.discount > 0;
+    if (els.subtotalRowEl) els.subtotalRowEl.hidden = !hasDiscount;
     if (els.subtotalEl) els.subtotalEl.textContent = formatBRL(totals.subtotal);
 
-    if (els.discountRowEl) els.discountRowEl.hidden = !totals.qualifies;
+    if (els.discountRowEl) els.discountRowEl.hidden = !hasDiscount;
     if (els.discountEl) els.discountEl.textContent = "-" + formatBRL(totals.discount);
+    if (els.discountLabelEl && hasDiscount) {
+      var pct = Math.round((totals.discount / totals.subtotal) * 100);
+      els.discountLabelEl.textContent = "Desconto (" + pct + "%)";
+    }
 
     if (els.giftNoteEl) {
       if (totals.qualifies) {
         els.giftNoteEl.textContent = "🎁 Seu pedido ganhou um brinde da FuiEuQueFiz e 5% de desconto!";
+        els.giftNoteEl.classList.add("is-active");
+        els.giftNoteEl.hidden = false;
+      } else if (totals.couponApplied) {
+        els.giftNoteEl.textContent = "✓ Cupom aplicado!";
         els.giftNoteEl.classList.add("is-active");
         els.giftNoteEl.hidden = false;
       } else if (mode === "promo") {
@@ -201,8 +225,70 @@
     subtotalEl: subtotalEl,
     discountRowEl: discountRowEl,
     discountEl: discountEl,
+    discountLabelEl: discountLabelEl,
     giftNoteEl: giftNoteEl
   }, "promo");
+
+  /* ------------------------------------------------------------------
+     Cupom de desconto — nunca divulgado no site (o cliente só descobre
+     um código por fora, ex: no e-mail de agradecimento pós-compra). A
+     validação aqui é só pra atualizar a exibição e reenquadrar o Brick
+     com o valor certo antes de pagar; api/create-order.js sempre revalida
+     o código e recalcula o total de novo no servidor, então não tem como
+     um cupom inventado no navegador render desconto de verdade.
+     ------------------------------------------------------------------ */
+  function recomputeTotals() {
+    totals = computeOrderTotals(window.Cart.getCartTotal(), appliedCouponCode);
+    total = totals.total;
+
+    applyTotalsToDom(totals, {
+      totalEl: totalEl,
+      subtotalRowEl: subtotalRowEl,
+      subtotalEl: subtotalEl,
+      discountRowEl: discountRowEl,
+      discountEl: discountEl,
+      discountLabelEl: discountLabelEl,
+      giftNoteEl: giftNoteEl
+    }, "promo");
+
+    remountBrickWithCurrentTotal();
+  }
+
+  if (couponApplyBtn) {
+    couponApplyBtn.addEventListener("click", function () {
+      var raw = couponInputEl ? couponInputEl.value.trim() : "";
+
+      if (!raw) {
+        appliedCouponCode = null;
+        if (couponStatusEl) {
+          couponStatusEl.className = "checkout-coupon-status";
+          couponStatusEl.textContent = "";
+        }
+        recomputeTotals();
+        return;
+      }
+
+      var candidateTotals = computeOrderTotals(window.Cart.getCartTotal(), raw);
+
+      if (!candidateTotals.couponApplied) {
+        appliedCouponCode = null;
+        if (couponStatusEl) {
+          couponStatusEl.className = "checkout-coupon-status checkout-coupon-status--error";
+          couponStatusEl.textContent = "Cupom inválido.";
+        }
+        recomputeTotals();
+        return;
+      }
+
+      appliedCouponCode = raw;
+      if (couponStatusEl) {
+        var pct = Math.round(candidateTotals.discount > 0 ? (candidateTotals.discount / candidateTotals.subtotal) * 100 : 0);
+        couponStatusEl.className = "checkout-coupon-status checkout-coupon-status--success";
+        couponStatusEl.textContent = "Cupom aplicado — " + pct + "% de desconto!";
+      }
+      recomputeTotals();
+    });
+  }
 
   /* ------------------------------------------------------------------
      Card de confirmação pós-pagamento — resumo do pedido + opção de
@@ -219,6 +305,7 @@
       subtotalEl: receiptSubtotalEl,
       discountRowEl: receiptDiscountRowEl,
       discountEl: receiptDiscountEl,
+      discountLabelEl: receiptDiscountLabelEl,
       giftNoteEl: receiptGiftNoteEl
     }, "confirm");
     if (receiptPaymentEl) receiptPaymentEl.textContent = currentPaymentLabel;
@@ -248,6 +335,7 @@
         body: JSON.stringify({
           email: email,
           paymentLabel: currentPaymentLabel,
+          couponCode: appliedCouponCode,
           items: items.map(function (item) {
             return {
               slug: item.slug,
@@ -287,7 +375,16 @@
 
   /* ------------------------------------------------------------------
      2 e 3. Public Key + montagem do Brick
+
+     bricksBuilder/brickController ficam no escopo do módulo porque o
+     Brick precisa ser remontado (unmount + create de novo) sempre que o
+     total mudar depois de já montado — hoje só acontece ao aplicar um
+     cupom, já que o valor de "initialization.amount" não é algo que dá
+     pra atualizar num Brick já montado.
      ------------------------------------------------------------------ */
+  var bricksBuilder = null;
+  var brickController = null;
+
   fetch("/api/public-config")
     .then(function (res) {
       return res.json().then(function (data) {
@@ -297,20 +394,27 @@
     })
     .then(function (data) {
       if (!data.publicKey) throw new Error("Chave pública de pagamento ausente.");
-      initBrick(data.publicKey);
+      if (typeof MercadoPago === "undefined") throw new Error("Não foi possível carregar o Mercado Pago. Verifique sua conexão e recarregue a página.");
+
+      var mp = new MercadoPago(data.publicKey, { locale: "pt-BR" });
+      bricksBuilder = mp.bricks();
+      mountBrick();
     })
     .catch(function (err) {
       showResult("rejected", "Não foi possível carregar o formulário de pagamento agora. Tente novamente mais tarde ou finalize pelo WhatsApp. (" + err.message + ")");
     });
 
-  function initBrick(publicKey) {
-    if (typeof MercadoPago === "undefined") {
-      showResult("rejected", "Não foi possível carregar o Mercado Pago. Verifique sua conexão e recarregue a página.");
-      return;
-    }
+  /* Chamada na montagem inicial e de novo sempre que o total mudar (cupom
+     aplicado/removido) depois que o Brick já estava na tela. */
+  function remountBrickWithCurrentTotal() {
+    if (!bricksBuilder) return; /* Brick ainda nem carregou a public key — o valor atual já vai ser usado quando montar */
+    mountBrick();
+  }
 
-    var mp = new MercadoPago(publicKey, { locale: "pt-BR" });
-    var bricksBuilder = mp.bricks();
+  function mountBrick() {
+    if (brickController && typeof brickController.unmount === "function") {
+      brickController.unmount();
+    }
 
     bricksBuilder.create("payment", "payment-brick-container", {
       initialization: {
@@ -363,6 +467,7 @@
               body: JSON.stringify({
                 paymentType: paymentType,
                 formData: formData,
+                couponCode: appliedCouponCode,
                 items: items.map(function (item) {
                   return {
                     slug: item.slug,
@@ -410,6 +515,8 @@
           });
         }
       }
+    }).then(function (controller) {
+      brickController = controller;
     });
   }
 })();

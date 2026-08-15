@@ -155,21 +155,45 @@ function formatBRLDelta(value) {
 /* ==========================================================================
    Regra de brinde + desconto: pedidos que somam R$ 3.000 ou mais (antes do
    desconto) ganham um brinde da FuiEuQueFiz e 5% de desconto no total.
-   Duplicado em api/create-order.js e api/send-receipt.js (Node, roda no
-   servidor, onde o valor cobrado de verdade é decidido) — qualquer mudança
-   no valor/percentual aqui precisa ser replicada nos dois arquivos.
+   Cupons dão desconto por código, sem depender do valor do pedido — nunca
+   divulgados no site (FAMILIAROSA é passado direto pra quem a loja quiser
+   dar; OBRIGADO10 só é mencionado no e-mail de agradecimento pós-compra,
+   ver api/send-receipt.js). O maior desconto entre "atingiu R$3.000" e
+   "tem cupom válido" é o que vale — não somam.
+   Tudo duplicado em api/create-order.js e api/send-receipt.js (Node, roda
+   no servidor, onde o valor cobrado de verdade é decidido) — qualquer
+   mudança aqui precisa ser replicada nos dois arquivos.
    ========================================================================== */
 var GIFT_DISCOUNT_THRESHOLD = 3000;
 var GIFT_DISCOUNT_RATE = 0.05;
 
-function computeOrderTotals(subtotal) {
+var COUPONS = {
+  FAMILIAROSA: { rate: 0.05 },
+  OBRIGADO10: { rate: 0.10 }
+};
+
+function findCoupon(code) {
+  if (!code) return null;
+  var normalized = String(code).trim().toUpperCase();
+  return normalized && COUPONS[normalized] ? { code: normalized, rate: COUPONS[normalized].rate } : null;
+}
+
+function computeOrderTotals(subtotal, couponCode) {
   var qualifies = subtotal >= GIFT_DISCOUNT_THRESHOLD;
-  var discount = qualifies ? Math.round(subtotal * GIFT_DISCOUNT_RATE * 100) / 100 : 0;
+  var coupon = findCoupon(couponCode);
+
+  var rate = qualifies ? GIFT_DISCOUNT_RATE : 0;
+  if (coupon && coupon.rate > rate) rate = coupon.rate;
+
+  var discount = rate > 0 ? Math.round(subtotal * rate * 100) / 100 : 0;
+
   return {
     subtotal: subtotal,
     discount: discount,
     total: Math.round((subtotal - discount) * 100) / 100,
-    qualifies: qualifies
+    qualifies: qualifies, /* brinde físico continua só pra quem bate R$3.000 de verdade */
+    couponApplied: !!coupon,
+    couponCode: coupon ? coupon.code : null
   };
 }
 

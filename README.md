@@ -111,6 +111,19 @@ Pra mudar as perguntas/opções, edite o array `QUESTIONS` no topo de `js/style-
 
 O ícone de lupa no nav (`#search-toggle`, presente em toda página) abre um painel de busca (`js/search.js`) que filtra o array `PRODUCTS` por nome, categoria e descrição curta — sem backend, sem índice separado, e ignora acentos (buscar "aco" encontra "aço"). Clicar num resultado leva direto pra `produto.html?slug=...`.
 
+### (h) Cupons de desconto e e-mail de agradecimento — ✅ já feito
+
+Além do desconto automático de 5% pra pedidos ≥ R$3.000 (brinde + desconto, ver `js/products.js`), o site agora aceita cupons digitados manualmente no checkout (`#checkout-coupon-input`/`#checkout-coupon-apply` em `checkout.html`):
+
+- **`FAMILIAROSA`** — 5% de desconto, funciona em **qualquer valor de pedido**, mesmo abaixo de R$3.000 (mas sem o brinde físico, que continua exigindo o limite de R$3.000 de verdade).
+- **`OBRIGADO10`** — 10% de desconto. Esse cupom **não aparece em nenhum lugar do site** — só é revelado dentro do e-mail de agradecimento enviado depois de uma compra (ver abaixo), como recompensa pra próxima compra.
+
+Regra de acúmulo: o desconto aplicado é sempre o **maior entre** o desconto automático (5% se passou de R$3.000) e o desconto do cupom digitado — nunca soma os dois. `computeOrderTotals(subtotal, couponCode)` em `js/products.js` decide isso no cliente (só pra exibição); a decisão que **vale de verdade** é sempre recalculada no servidor, em `applyGiftDiscount()` — duplicada com o mesmo comportamento em `api/create-order.js` (cobrança) e `api/send-receipt.js` (e-mail), igual ao restante da lógica de preço deste projeto.
+
+Ao aplicar um cupom válido, `js/checkout-brick.js` recalcula o total e **remonta o Payment Brick do zero** (`unmount()` + `create()` de novo) — a API do Mercado Pago não permite atualizar o valor de um Brick já montado.
+
+**E-mail de agradecimento:** todo e-mail de resumo de pedido enviado por `api/send-receipt.js` (o card opt-in que aparece depois do pagamento, ver seção "Resumo do pedido por e-mail" abaixo) agora também leva uma nota de agradecimento mencionando o cupom `OBRIGADO10` pra próxima compra — é intencional que isso só chegue pra quem realmente comprou e pediu o e-mail, sem nenhuma divulgação do cupom em banner, página ou pop-up do site.
+
 ## Como publicar (deploy)
 
 O site deixou de ser 100% estático: `api/create-order.js`, `api/public-config.js` e `api/webhook.js` são funções serverless que precisam rodar num servidor (ver seção "Pagamento com Mercado Pago" abaixo). Por isso, **a publicação precisa ser na Vercel** — Netlify e GitHub Pages não rodam essas funções sem reescrevê-las no formato deles.

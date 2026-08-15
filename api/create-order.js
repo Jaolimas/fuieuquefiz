@@ -187,21 +187,45 @@ function computeAuthoritativeSubtotal(items, productsMap) {
 /* ==========================================================================
    Regra de brinde + desconto: pedidos que somam R$3.000 ou mais (subtotal,
    antes do desconto) ganham um brinde da FuiEuQueFiz e 5% de desconto no
-   total cobrado. Duplicado em js/products.js (computeOrderTotals, usado só
-   pra exibição no navegador) e em api/send-receipt.js — qualquer mudança
-   aqui precisa ser replicada nos dois outros lugares.
+   total cobrado. Cupons dão desconto por código, sem depender do valor do
+   pedido — nunca divulgados no site (FAMILIAROSA é passado direto pra quem
+   a loja quiser dar; OBRIGADO10 só é mencionado no e-mail de agradecimento
+   pós-compra, ver api/send-receipt.js). O maior desconto entre "atingiu
+   R$3.000" e "tem cupom válido" é o que vale — não somam. O brinde físico
+   continua só pra quem bate R$3.000 de verdade (campo `qualifies`).
+   Duplicado em js/products.js (computeOrderTotals, usado só pra exibição
+   no navegador) e em api/send-receipt.js — qualquer mudança aqui precisa
+   ser replicada nos dois outros lugares.
    ========================================================================== */
 const GIFT_DISCOUNT_THRESHOLD = 3000;
 const GIFT_DISCOUNT_RATE = 0.05;
 
-function applyGiftDiscount(subtotal) {
+const COUPONS = {
+  FAMILIAROSA: { rate: 0.05 },
+  OBRIGADO10: { rate: 0.10 }
+};
+
+function findCoupon(code) {
+  if (!code) return null;
+  const normalized = String(code).trim().toUpperCase();
+  return normalized && COUPONS[normalized] ? { code: normalized, rate: COUPONS[normalized].rate } : null;
+}
+
+function applyGiftDiscount(subtotal, couponCode) {
   const qualifies = subtotal >= GIFT_DISCOUNT_THRESHOLD;
-  const discount = qualifies ? Math.round(subtotal * GIFT_DISCOUNT_RATE * 100) / 100 : 0;
+  const coupon = findCoupon(couponCode);
+
+  let rate = qualifies ? GIFT_DISCOUNT_RATE : 0;
+  if (coupon && coupon.rate > rate) rate = coupon.rate;
+
+  const discount = rate > 0 ? Math.round(subtotal * rate * 100) / 100 : 0;
+
   return {
     subtotal,
     discount,
     total: Math.round((subtotal - discount) * 100) / 100,
-    qualifies
+    qualifies,
+    couponApplied: !!coupon
   };
 }
 
@@ -228,6 +252,7 @@ export default async function handler(req, res) {
   const formData = body && body.formData;
   const paymentType = body && body.paymentType; /* 'credit_card' | 'debit_card' | 'bank_transfer' (Pix), vem do Brick */
   const isPix = paymentType === "bank_transfer" || (formData && formData.payment_method_id === "pix");
+  const couponCode = body && typeof body.couponCode === "string" ? body.couponCode : null;
 
   if (items.length === 0) {
     return res.status(400).json({ message: "Carrinho vazio." });
@@ -244,7 +269,7 @@ export default async function handler(req, res) {
   try {
     const productsMap = loadProductsMap();
     const subtotal = computeAuthoritativeSubtotal(items, productsMap);
-    totals = applyGiftDiscount(subtotal);
+    totals = applyGiftDiscount(subtotal, couponCode);
   } catch (err) {
     return res.status(400).json({ message: "Não foi possível validar os itens do carrinho: " + err.message });
   }

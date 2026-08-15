@@ -1553,6 +1553,17 @@
   font-size: var(--text-caption);
 }
 
+/* checkout.html alterna esses dois via atributo `hidden` (em vez de
+   incluir/remover o HTML como no carrinho) — sem isso, o `display:flex`
+   acima venceria o `display:none` padrão do navegador pro atributo
+   `hidden` (regra de autor sempre bate regra de user-agent, mesmo com
+   especificidade igual), deixando a linha "aparecendo vazia" mesmo
+   escondida. */
+.price-subtotal-row[hidden],
+.price-discount-row[hidden] {
+  display: none;
+}
+
 .price-subtotal-row {
   color: var(--color-ink-48);
 }
@@ -1590,6 +1601,14 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-2xl);
+}
+
+/* Mesmo motivo do fix em .price-subtotal-row/.price-discount-row acima —
+   `display:grid` bate o `display:none` padrão do atributo `hidden` sem
+   isso, deixando o grid inteiro (resumo + formulário de pagamento)
+   visível junto com a mensagem de "carrinho vazio". */
+.checkout-grid[hidden] {
+  display: none;
 }
 
 @media (min-width: 835px) {
@@ -1828,6 +1847,36 @@
 
 .checkout-receipt-status--error {
   color: var(--color-action);
+}
+
+.checkout-coupon-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.checkout-coupon-row .text-input {
+  text-transform: uppercase;
+}
+
+.checkout-coupon-row .text-input::placeholder {
+  text-transform: none;
+}
+
+.checkout-coupon-status {
+  font-size: var(--text-fine);
+  margin-top: var(--space-xs);
+  min-height: 1.2em;
+}
+
+.checkout-coupon-status--success {
+  color: var(--color-action);
+  font-weight: 600;
+}
+
+.checkout-coupon-status--error {
+  color: var(--color-ink-48);
 }
 
 /* ==========================================================================
