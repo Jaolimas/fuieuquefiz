@@ -32,6 +32,11 @@
       Brick com o novo valor — o código vai junto no POST pra
       /api/create-order e /api/send-receipt, mas quem decide de verdade
       se o cupom vale (e por quanto) é sempre o servidor.
+   8. Endereço de entrega obrigatório (js/checkout-address.js): o Brick só
+      é montado depois que o cliente confirma um endereço com frete
+      calculável (evento "checkout:address-confirmed"). O frete somado ao
+      total é só prévia — api/create-order.js recalcula tudo de novo a
+      partir do endereço antes de cobrar.
    ========================================================================== */
 
 (function () {
@@ -41,6 +46,7 @@
   if (!container) return; // não estamos em checkout.html
 
   var emptyEl = document.getElementById("checkout-empty");
+  var addressSectionEl = document.getElementById("checkout-address-section");
   var gridEl = document.getElementById("checkout-grid");
   var summaryLinesEl = document.getElementById("checkout-summary-lines");
   var subtotalRowEl = document.getElementById("checkout-subtotal-row");
@@ -48,6 +54,9 @@
   var discountRowEl = document.getElementById("checkout-discount-row");
   var discountEl = document.getElementById("checkout-discount");
   var discountLabelEl = document.getElementById("checkout-discount-label");
+  var shippingRowEl = document.getElementById("checkout-shipping-row");
+  var shippingEl = document.getElementById("checkout-shipping");
+  var shippingLabelEl = document.getElementById("checkout-shipping-label");
   var totalEl = document.getElementById("checkout-total");
   var giftNoteEl = document.getElementById("checkout-gift-note");
   var couponInputEl = document.getElementById("checkout-coupon-input");
@@ -65,8 +74,12 @@
   var receiptDiscountRowEl = document.getElementById("checkout-receipt-discount-row");
   var receiptDiscountEl = document.getElementById("checkout-receipt-discount");
   var receiptDiscountLabelEl = document.getElementById("checkout-receipt-discount-label");
+  var receiptShippingRowEl = document.getElementById("checkout-receipt-shipping-row");
+  var receiptShippingEl = document.getElementById("checkout-receipt-shipping");
+  var receiptShippingLabelEl = document.getElementById("checkout-receipt-shipping-label");
   var receiptTotalEl = document.getElementById("checkout-receipt-total");
   var receiptGiftNoteEl = document.getElementById("checkout-receipt-gift-note");
+  var receiptAddressEl = document.getElementById("checkout-receipt-address");
   var receiptPaymentEl = document.getElementById("checkout-receipt-payment");
   var receiptForm = document.getElementById("checkout-receipt-form");
   var receiptEmailInput = document.getElementById("checkout-receipt-email");
@@ -75,6 +88,10 @@
 
   var currentPaymentLabel = ""; /* preenchido por showReceipt(), lido no envio do e-mail */
   var appliedCouponCode = null; /* cupom validado (client-side, só pra exibição) — a validação de verdade é sempre em api/create-order.js */
+  var addressConfirmed = false; /* só true depois do evento "checkout:address-confirmed" (js/checkout-address.js) */
+  var confirmedAddress = null;
+  var shippingFee = 0; /* prévia client-side — api/create-order.js recalcula a partir do endereço antes de cobrar */
+  var shippingDistanceKm = null;
 
   var CARD_BRAND_LABELS = {
     visa: "Visa",
@@ -128,13 +145,17 @@
     }).join("");
   }
 
-  /* Preenche subtotal/desconto/total + nota de brinde a partir de um objeto
-     { subtotal, discount, total, qualifies } (ver computeOrderTotals em
-     js/products.js). mode "promo" (resumo, antes de pagar) sempre mostra a
-     nota, convidando o cliente a atingir o valor mínimo; mode "confirm"
-     (card de recibo, depois de pagar) só mostra quando já qualificou. */
-  function applyTotalsToDom(totals, els, mode) {
-    if (els.totalEl) els.totalEl.textContent = formatBRL(totals.total);
+  /* Preenche subtotal/desconto/frete/total + nota de brinde a partir de um
+     objeto { subtotal, discount, total, qualifies } (ver computeOrderTotals
+     em js/products.js) + o frete calculado à parte (fee/distanceKm, ver
+     js/checkout-address.js). mode "promo" (resumo, antes de pagar) sempre
+     mostra a nota, convidando o cliente a atingir o valor mínimo; mode
+     "confirm" (card de recibo, depois de pagar) só mostra quando já
+     qualificou. */
+  function applyTotalsToDom(totals, els, mode, fee, distanceKm) {
+    var shippingFeeValue = fee || 0;
+    var grandTotal = totals.total + shippingFeeValue;
+    if (els.totalEl) els.totalEl.textContent = formatBRL(grandTotal);
 
     /* Mostra a linha de subtotal/desconto sempre que houve desconto —
        antes só dependia de "qualifies" (bateu R$3.000), mas agora um
@@ -148,6 +169,12 @@
     if (els.discountLabelEl && hasDiscount) {
       var pct = Math.round((totals.discount / totals.subtotal) * 100);
       els.discountLabelEl.textContent = "Desconto (" + pct + "%)";
+    }
+
+    if (els.shippingRowEl) els.shippingRowEl.hidden = distanceKm == null;
+    if (els.shippingEl) els.shippingEl.textContent = shippingFeeValue > 0 ? formatBRL(shippingFeeValue) : "Grátis";
+    if (els.shippingLabelEl && distanceKm != null) {
+      els.shippingLabelEl.textContent = "Frete (" + distanceKm + "km de Campinas-SP)";
     }
 
     if (els.giftNoteEl) {
@@ -211,12 +238,15 @@
 
   if (!items || items.length === 0) {
     if (emptyEl) emptyEl.hidden = false;
+    if (addressSectionEl) addressSectionEl.hidden = true;
     if (gridEl) gridEl.hidden = true;
     return;
   }
 
+  if (addressSectionEl) addressSectionEl.hidden = false;
+
   var totals = window.Cart.getCartTotals();
-  var total = totals.total; /* usado como valor inicial do Brick (parcelamento) — o servidor recalcula ao criar a order */
+  var total = totals.total; /* usado como valor inicial do Brick (parcelamento) — somado ao frete assim que o endereço for confirmado; o servidor recalcula tudo ao criar a order */
 
   if (summaryLinesEl) summaryLinesEl.innerHTML = summaryLinesHtml(items);
   applyTotalsToDom(totals, {
@@ -226,8 +256,11 @@
     discountRowEl: discountRowEl,
     discountEl: discountEl,
     discountLabelEl: discountLabelEl,
+    shippingRowEl: shippingRowEl,
+    shippingEl: shippingEl,
+    shippingLabelEl: shippingLabelEl,
     giftNoteEl: giftNoteEl
-  }, "promo");
+  }, "promo", shippingFee, shippingDistanceKm);
 
   /* ------------------------------------------------------------------
      Cupom de desconto — nunca divulgado no site (o cliente só descobre
@@ -239,7 +272,7 @@
      ------------------------------------------------------------------ */
   function recomputeTotals() {
     totals = computeOrderTotals(window.Cart.getCartTotal(), appliedCouponCode);
-    total = totals.total;
+    total = totals.total + shippingFee;
 
     applyTotalsToDom(totals, {
       totalEl: totalEl,
@@ -248,11 +281,31 @@
       discountRowEl: discountRowEl,
       discountEl: discountEl,
       discountLabelEl: discountLabelEl,
+      shippingRowEl: shippingRowEl,
+      shippingEl: shippingEl,
+      shippingLabelEl: shippingLabelEl,
       giftNoteEl: giftNoteEl
-    }, "promo");
+    }, "promo", shippingFee, shippingDistanceKm);
 
     remountBrickWithCurrentTotal();
   }
+
+  /* ------------------------------------------------------------------
+     Endereço de entrega obrigatório (js/checkout-address.js) — o Brick só
+     é revelado/montado depois desse evento. Frete somado ao total aqui é
+     só prévia; api/create-order.js recalcula tudo de novo a partir do
+     mesmo endereço antes de cobrar.
+     ------------------------------------------------------------------ */
+  document.addEventListener("checkout:address-confirmed", function (e) {
+    confirmedAddress = e.detail.address;
+    shippingFee = e.detail.fee;
+    shippingDistanceKm = e.detail.distanceKm;
+    addressConfirmed = true;
+
+    if (gridEl) gridEl.hidden = false;
+    recomputeTotals();
+    gridEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 
   if (couponApplyBtn) {
     couponApplyBtn.addEventListener("click", function () {
@@ -299,16 +352,30 @@
     if (!receiptEl) return;
     currentPaymentLabel = paymentLabel || "";
     if (receiptLinesEl) receiptLinesEl.innerHTML = summaryLinesHtml(items);
-    applyTotalsToDom(orderTotals || totals, {
+
+    var resolvedTotals = orderTotals || totals;
+    var fee = resolvedTotals.shippingFee != null ? resolvedTotals.shippingFee : shippingFee;
+    var km = resolvedTotals.shippingDistanceKm != null ? resolvedTotals.shippingDistanceKm : shippingDistanceKm;
+
+    applyTotalsToDom(resolvedTotals, {
       totalEl: receiptTotalEl,
       subtotalRowEl: receiptSubtotalRowEl,
       subtotalEl: receiptSubtotalEl,
       discountRowEl: receiptDiscountRowEl,
       discountEl: receiptDiscountEl,
       discountLabelEl: receiptDiscountLabelEl,
+      shippingRowEl: receiptShippingRowEl,
+      shippingEl: receiptShippingEl,
+      shippingLabelEl: receiptShippingLabelEl,
       giftNoteEl: receiptGiftNoteEl
-    }, "confirm");
+    }, "confirm", fee, km);
     if (receiptPaymentEl) receiptPaymentEl.textContent = currentPaymentLabel;
+    if (receiptAddressEl && confirmedAddress) {
+      var a = confirmedAddress;
+      receiptAddressEl.textContent = "Entregar em: " + a.street + ", " + a.number +
+        (a.complement ? " (" + a.complement + ")" : "") +
+        " - " + a.neighborhood + ", " + a.city + "/" + a.state + " — CEP " + a.cep;
+    }
     receiptEl.hidden = false;
   }
 
@@ -336,6 +403,7 @@
           email: email,
           paymentLabel: currentPaymentLabel,
           couponCode: appliedCouponCode,
+          address: confirmedAddress,
           items: items.map(function (item) {
             return {
               slug: item.slug,
@@ -398,16 +466,17 @@
 
       var mp = new MercadoPago(data.publicKey, { locale: "pt-BR" });
       bricksBuilder = mp.bricks();
-      mountBrick();
+      if (addressConfirmed) mountBrick(); /* endereço já confirmado antes da public key carregar (raro, mas possível) */
     })
     .catch(function (err) {
       showResult("rejected", "Não foi possível carregar o formulário de pagamento agora. Tente novamente mais tarde ou finalize pelo WhatsApp. (" + err.message + ")");
     });
 
-  /* Chamada na montagem inicial e de novo sempre que o total mudar (cupom
-     aplicado/removido) depois que o Brick já estava na tela. */
+  /* Chamada na montagem inicial (após confirmar o endereço) e de novo
+     sempre que o total mudar (cupom aplicado/removido) depois que o Brick
+     já estava na tela. */
   function remountBrickWithCurrentTotal() {
-    if (!bricksBuilder) return; /* Brick ainda nem carregou a public key — o valor atual já vai ser usado quando montar */
+    if (!bricksBuilder || !addressConfirmed) return; /* Brick ainda não pode montar — falta a public key ou o endereço confirmado */
     mountBrick();
   }
 
@@ -455,6 +524,14 @@
 
           if (pixEl) pixEl.hidden = true; /* limpa QR de uma tentativa anterior, se houver */
 
+          /* Segurança extra — o Brick só é montado depois do endereço
+             confirmado, mas se de alguma forma chegar aqui sem endereço,
+             não deixa cobrar sem saber pra onde entregar. */
+          if (!addressConfirmed || !confirmedAddress) {
+            showResult("rejected", "Preencha o endereço de entrega antes de pagar.");
+            return Promise.reject();
+          }
+
           return new Promise(function (resolve, reject) {
             var deviceId = window.MP_DEVICE_SESSION_ID || "";
 
@@ -468,6 +545,7 @@
                 paymentType: paymentType,
                 formData: formData,
                 couponCode: appliedCouponCode,
+                address: confirmedAddress,
                 items: items.map(function (item) {
                   return {
                     slug: item.slug,
@@ -494,7 +572,7 @@
                 var status = payload.result.status;
                 var paymentLabel = paymentMethodLabel(paymentType, formData);
                 if (status === "approved") {
-                  showResult("approved", payload.result.message || "Pagamento aprovado! Nossa equipe entra em contato pelo WhatsApp para combinar prazo e frete.");
+                  showResult("approved", payload.result.message || "Pagamento aprovado! Nossa equipe entra em contato pelo WhatsApp para combinar o prazo de produção.");
                   showReceipt(paymentLabel, payload.result.totals);
                   if (window.Cart && window.Cart.clear) window.Cart.clear();
                 } else if (status === "in_process") {

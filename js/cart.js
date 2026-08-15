@@ -242,7 +242,7 @@
       giftNoteHtml +
       '<p class="cart-microcopy">Você será redirecionado ao WhatsApp com sua lista — nossa equipe confirma disponibilidade, prazo e frete.</p>' +
       '<button type="button" class="btn btn--primary cart-checkout-btn">Finalizar pedido via WhatsApp</button>' +
-      '<p class="cart-microcopy cart-microcopy--pay">Ou pague agora o valor das peças com cartão, sem sair do site — frete e prazo de produção são combinados depois pelo WhatsApp.</p>' +
+      '<p class="cart-microcopy cart-microcopy--pay">Ou pague agora com cartão, sem sair do site — você informa o endereço de entrega e o frete já aparece calculado antes de pagar; o prazo de produção é combinado depois pelo WhatsApp.</p>' +
       '<a href="checkout.html" class="btn btn--ghost cart-pay-btn">Pagar com cartão</a>';
 
     footerContainer.querySelector(".cart-checkout-btn").addEventListener("click", checkoutViaWhatsApp);

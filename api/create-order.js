@@ -24,6 +24,10 @@
      data/products.json (única fonte de verdade de preço) a cada chamada,
      e o desconto de brinde (pedidos ≥ R$3.000) é aplicado aqui em cima
      desse subtotal — nunca confiamos em desconto calculado no navegador.
+   - Endereço de entrega é obrigatório e o frete é sempre recalculado aqui
+     a partir dele (lib/shipping.js — grátis até 80km de Campinas-SP,
+     +R$50 até 100km, recusado acima disso) e somado ao total cobrado —
+     nunca confiamos no valor de frete que o navegador possa ter mostrado.
    - Nunca logamos token de cartão, e-mail do pagador ou qualquer dado
      pessoal — só id do pedido, status e status_detail (não sensíveis).
    - Idempotency key gerada a cada requisição (crypto.randomUUID()) evita
@@ -36,6 +40,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { notifyWhatsApp } from "../lib/whatsapp.js";
+import { calculateShipping } from "../lib/shipping.js";
 
 /* ==========================================================================
    Tradução de status_detail para mensagens claras em português.
@@ -94,15 +99,23 @@ function friendlyMessage(category, statusDetail) {
 }
 
 /* Texto simples pro aviso de WhatsApp — "2x Mesa de Centro com Lareira,
-   1x Banco Ferro A — Total: R$ 4.500". Só descritivo, não afeta cobrança. */
-function buildOrderSummaryText(items, totals) {
+   1x Banco Ferro A — Total: R$ 4.500 — Entregar em: Rua X, 123 - Bairro,
+   Campinas/SP (CEP 13000-000)". Só descritivo, não afeta cobrança. */
+function buildOrderSummaryText(items, totals, address) {
   const lines = (items || []).map(function (it) {
     const qty = (it && it.qty) || 1;
     const name = (it && it.name) || (it && it.slug) || "Peça";
     return qty + "x " + name;
   });
-  const totalText = "R$ " + totals.total.toLocaleString("pt-BR");
-  return "Novo pedido pago no site! " + lines.join(", ") + " — Total: " + totalText;
+  const grandTotal = totals.total + (totals.shippingFee || 0);
+  const totalText = "R$ " + grandTotal.toLocaleString("pt-BR");
+  const addressText = address
+    ? " — Entregar em: " + address.street + ", " + address.number +
+      (address.complement ? " (" + address.complement + ")" : "") +
+      " - " + address.neighborhood + ", " + address.city + "/" + address.state +
+      " (CEP " + address.cep + ")"
+    : "";
+  return "Novo pedido pago no site! " + lines.join(", ") + " — Total: " + totalText + addressText;
 }
 
 /* ==========================================================================
@@ -112,7 +125,7 @@ function buildOrderSummaryText(items, totals) {
    transação recusada/falha) aninhada em `data.data`. Nos dois casos a forma
    dos campos relevantes (status/status_detail/payment_method) é a mesma.
    ========================================================================== */
-async function buildOrderResponse(orderData, totals, isPix, items) {
+async function buildOrderResponse(orderData, totals, isPix, items, address) {
   const payment = orderData.transactions && orderData.transactions.payments && orderData.transactions.payments[0];
   const status = (payment && payment.status) || orderData.status;
   const statusDetail = payment && payment.status_detail;
@@ -136,7 +149,7 @@ async function buildOrderResponse(orderData, totals, isPix, items) {
      Pix não: confirma depois, de forma assíncrona — o aviso de Pix pago
      acontece em api/webhook.js, quando a Mercado Pago notificar. */
   if (category === "approved" && !isPix) {
-    await notifyWhatsApp(buildOrderSummaryText(items, totals));
+    await notifyWhatsApp(buildOrderSummaryText(items, totals, address));
   }
 
   /* js/checkout-brick.js só reconhece "approved"/"in_process" — traduzimos
@@ -253,6 +266,7 @@ export default async function handler(req, res) {
   const paymentType = body && body.paymentType; /* 'credit_card' | 'debit_card' | 'bank_transfer' (Pix), vem do Brick */
   const isPix = paymentType === "bank_transfer" || (formData && formData.payment_method_id === "pix");
   const couponCode = body && typeof body.couponCode === "string" ? body.couponCode : null;
+  const address = body && typeof body.address === "object" ? body.address : null;
 
   if (items.length === 0) {
     return res.status(400).json({ message: "Carrinho vazio." });
@@ -265,16 +279,33 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: "Dados do pagamento incompletos." });
   }
 
+  /* Endereço de entrega é obrigatório (frete calculado por distância até
+     Campinas-SP, ver lib/shipping.js) — nunca confiamos no fee que o
+     navegador possa ter mostrado, recalculamos aqui. */
+  const shipping = await calculateShipping(address);
+  if (!shipping.ok) {
+    return res.status(400).json({ message: shipping.message });
+  }
+
   let totals;
   try {
     const productsMap = loadProductsMap();
     const subtotal = computeAuthoritativeSubtotal(items, productsMap);
-    totals = applyGiftDiscount(subtotal, couponCode);
+    const discountTotals = applyGiftDiscount(subtotal, couponCode);
+    /* totals.total continua sendo só o total das peças (subtotal - desconto)
+       — o frete é somado à parte (shippingFee), tanto na exibição (que
+       soma os dois pra mostrar o "Total" pro cliente) quanto aqui embaixo,
+       no valor cobrado de verdade (totalAmount). */
+    totals = {
+      ...discountTotals,
+      shippingFee: shipping.fee,
+      shippingDistanceKm: shipping.distanceKm
+    };
   } catch (err) {
     return res.status(400).json({ message: "Não foi possível validar os itens do carrinho: " + err.message });
   }
 
-  const totalAmount = totals.total;
+  const totalAmount = Math.round((totals.total + totals.shippingFee) * 100) / 100;
   if (!(totalAmount > 0)) {
     return res.status(400).json({ message: "Valor do pedido inválido." });
   }
@@ -345,13 +376,13 @@ export default async function handler(req, res) {
          schema (400), que não vem com esse `data.data`. */
       const failedOrder = data && data.data && data.data.transactions;
       if (failedOrder) {
-        return res.status(200).json(await buildOrderResponse(data.data, totals, isPix, items));
+        return res.status(200).json(await buildOrderResponse(data.data, totals, isPix, items, address));
       }
 
       return res.status(502).json({ message: "Não foi possível processar o pagamento. Tente novamente ou finalize pelo WhatsApp." });
     }
 
-    return res.status(200).json(await buildOrderResponse(data, totals, isPix, items));
+    return res.status(200).json(await buildOrderResponse(data, totals, isPix, items, address));
   } catch (err) {
     console.error("Falha ao chamar a API do Mercado Pago:", err.message);
     return res.status(500).json({ message: "Erro interno ao processar pagamento." });

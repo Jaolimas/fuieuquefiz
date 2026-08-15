@@ -1547,20 +1547,22 @@
    (cart.js) e no checkout (checkout.html / checkout-brick.js).
    ========================================================================== */
 .price-subtotal-row,
-.price-discount-row {
+.price-discount-row,
+.price-shipping-row {
   display: flex;
   justify-content: space-between;
   font-size: var(--text-caption);
 }
 
-/* checkout.html alterna esses dois via atributo `hidden` (em vez de
+/* checkout.html alterna esses via atributo `hidden` (em vez de
    incluir/remover o HTML como no carrinho) — sem isso, o `display:flex`
    acima venceria o `display:none` padrão do navegador pro atributo
    `hidden` (regra de autor sempre bate regra de user-agent, mesmo com
    especificidade igual), deixando a linha "aparecendo vazia" mesmo
    escondida. */
 .price-subtotal-row[hidden],
-.price-discount-row[hidden] {
+.price-discount-row[hidden],
+.price-shipping-row[hidden] {
   display: none;
 }
 
@@ -1571,6 +1573,10 @@
 .price-discount-row {
   color: var(--color-action);
   font-weight: 600;
+}
+
+.price-shipping-row {
+  color: var(--color-ink-48);
 }
 
 .gift-promo-note {
@@ -1877,6 +1883,79 @@
 
 .checkout-coupon-status--error {
   color: var(--color-ink-48);
+}
+
+/* ==========================================================================
+   Checkout — endereço de entrega obrigatório (frete grátis até 80km de
+   Campinas-SP, +R$50 até 100km) — ver checkout.html / js/checkout-address.js
+   ========================================================================== */
+.checkout-address-section {
+  background: var(--color-canvas-alt);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+}
+
+.checkout-address-hint {
+  font-size: var(--text-caption);
+  color: var(--color-ink-48);
+  margin-bottom: var(--space-lg);
+}
+
+.checkout-address-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.checkout-address-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.checkout-address-field {
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-size: var(--text-fine);
+  font-weight: 600;
+  color: var(--color-ink-80);
+}
+
+.checkout-address-field--wide {
+  flex: 2 1 260px;
+}
+
+.checkout-address-field--narrow {
+  flex: 1 1 120px;
+  max-width: 220px;
+}
+
+.checkout-address-field .text-input {
+  width: 100%;
+}
+
+.checkout-address-status {
+  font-size: var(--text-fine);
+  min-height: 1.2em;
+  margin-top: var(--space-xs);
+}
+
+.checkout-address-status--success {
+  color: var(--color-action);
+  font-weight: 600;
+}
+
+.checkout-address-status--error {
+  color: var(--color-action);
+}
+
+.checkout-address-summary {
+  font-size: var(--text-fine);
+  color: var(--color-ink-48);
+  margin-top: var(--space-sm);
 }
 
 /* ==========================================================================

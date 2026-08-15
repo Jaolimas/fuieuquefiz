@@ -36,12 +36,14 @@ fuieuquefiz/
 ├── data/
 │   └── products.json          → Fonte de verdade dos PREÇOS (usada só pelo backend para validar o total)
 ├── api/
-│   ├── create-order.js        → Recalcula o total e cria a cobrança na API de Orders do Mercado Pago
+│   ├── create-order.js        → Recalcula o total (itens + frete) e cria a cobrança na API de Orders do Mercado Pago
 │   ├── public-config.js       → Expõe MP_PUBLIC_KEY (não secreta) para o checkout.html montar o Brick
 │   ├── send-receipt.js        → Envia o resumo do pedido por e-mail (Resend), recalculando os valores
+│   ├── shipping.js            → Prévia do frete no checkout (antes de pagar), a partir do endereço digitado
 │   └── webhook.js             → Recebe notificações do Mercado Pago, valida a assinatura (x-signature)
 ├── lib/
-│   └── whatsapp.js            → Avisa a loja no WhatsApp Business (Cloud API) quando um pedido é pago — não é rota, é módulo importado por api/create-order.js e api/webhook.js
+│   ├── whatsapp.js            → Avisa a loja no WhatsApp Business (Cloud API) quando um pedido é pago — não é rota, é módulo importado por api/create-order.js e api/webhook.js
+│   └── shipping.js            → Geocodifica o endereço (Nominatim) e calcula o frete por distância até Campinas-SP — módulo importado por api/shipping.js, api/create-order.js e api/send-receipt.js
 ├── css/
 │   ├── tokens.css            → Única fonte de verdade para cores, tipografia, espaçamento
 │   ├── base.css               → Reset e defaults do documento
@@ -53,6 +55,7 @@ fuieuquefiz/
 │   ├── main.js                  → Nav, menu mobile, reveal-on-scroll, scroll suave — roda em toda página
 │   ├── catalog.js               → Só em catalogo.html — grid filtrável/ordenável
 │   ├── product-page.js           → Só em produto.html — monta a página a partir do ?slug=
+│   ├── checkout-address.js        → Só em checkout.html — formulário de endereço obrigatório, autocompleta por CEP (ViaCEP) e dispara o cálculo de frete
 │   ├── checkout-brick.js         → Só em checkout.html — monta o Payment Brick (cartão + Pix) e envia pro backend
 │   ├── style-quiz.js              → Só em index.html — quiz de 3 perguntas que recomenda uma peça do catálogo
 │   └── search.js                  → Roda em toda página — busca client-side sobre PRODUCTS, painel que abre no ícone de lupa do nav
@@ -123,6 +126,20 @@ Regra de acúmulo: o desconto aplicado é sempre o **maior entre** o desconto au
 Ao aplicar um cupom válido, `js/checkout-brick.js` recalcula o total e **remonta o Payment Brick do zero** (`unmount()` + `create()` de novo) — a API do Mercado Pago não permite atualizar o valor de um Brick já montado.
 
 **E-mail de agradecimento:** todo e-mail de resumo de pedido enviado por `api/send-receipt.js` (o card opt-in que aparece depois do pagamento, ver seção "Resumo do pedido por e-mail" abaixo) agora também leva uma nota de agradecimento mencionando o cupom `OBRIGADO10` pra próxima compra — é intencional que isso só chegue pra quem realmente comprou e pediu o e-mail, sem nenhuma divulgação do cupom em banner, página ou pop-up do site.
+
+### (i) Endereço de entrega obrigatório e frete por distância — ✅ já feito
+
+No pagamento com cartão/Pix (`checkout.html`), o cliente precisa preencher um endereço de entrega completo (CEP, rua, número, complemento opcional, bairro, cidade, UF) **antes** de ver o resumo/formulário de pagamento — `#checkout-grid` só é revelado depois que o endereço é confirmado com sucesso (evento `checkout:address-confirmed`, disparado por `js/checkout-address.js`). O CEP autocompleta rua/bairro/cidade/UF via [ViaCEP](https://viacep.com.br) (gratuito, sem chave) — o cliente ainda pode corrigir qualquer campo antes de enviar.
+
+O frete é calculado pela distância (linha reta) entre o endereço e a oficina em Campinas-SP:
+
+- **Grátis até 80km.**
+- **+R$ 50 entre 80km e 100km.**
+- **Recusado acima de 100km** — a mensagem de erro deixa claro que a loja não entrega nesse raio ainda.
+
+Toda a lógica de geocodificação (via [Nominatim/OpenStreetMap](https://nominatim.openstreetmap.org), gratuito, sem chave) e cálculo de distância (fórmula de Haversine) vive em `lib/shipping.js`, importado por três rotas — `api/shipping.js` (prévia no checkout, antes de pagar), `api/create-order.js` (cobrança de verdade) e `api/send-receipt.js` (e-mail de recibo) — em vez de duplicado como a regra de desconto, já que depende de uma chamada de rede. **O frete nunca é confiado a partir do navegador**: mesmo que a prévia mostrada no checkout diga "grátis", `api/create-order.js` geocodifica o endereço de novo e recusa/cobra o valor certo antes de criar a cobrança.
+
+⚠️ Como a Nominatim é um serviço público e gratuito (sem SLA), pode falhar ou não localizar um endereço digitado de forma incomum — nesse caso o cliente vê uma mensagem pedindo pra conferir os dados ou finalizar pelo WhatsApp, em vez de deixar passar um frete errado. Esse mesmo limite de 100km (e a régua de frete grátis/pago) também foi atualizado em `contato.html` (FAQ e seção "Entrega e frete") e nas páginas legais (`termos-de-uso.html`, `politica-de-privacidade.html`), que antes diziam "entregamos para todo o país".
 
 ## Como publicar (deploy)
 
