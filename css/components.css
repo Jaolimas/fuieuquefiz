@@ -1005,29 +1005,64 @@
   gap: var(--space-md);
 }
 
+/* Stepper "trio de pegas" — três círculos numa cápsula, como contas
+   enfiadas num fio: − / quantidade (destacada, na cor da marca) / + .
+   Mesma lógica visual usada no carrinho (.cart-line-qty), só maior. */
 .pdp-qty-stepper {
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--color-hairline);
+  gap: 6px;
+  background: var(--color-canvas-alt);
   border-radius: var(--radius-pill);
+  padding: 5px;
 }
 
 .pdp-qty-btn {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 18px;
-  color: var(--color-ink);
+  color: var(--color-ink-80);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  transition: background 200ms var(--ease), color 200ms var(--ease), border-color 200ms var(--ease), transform 150ms var(--ease);
+}
+
+.pdp-qty-btn:hover {
+  background: var(--color-action);
+  border-color: var(--color-action);
+  color: #fff;
+}
+
+.pdp-qty-btn:active {
+  transform: scale(0.88);
 }
 
 .pdp-qty-value {
-  min-width: 32px;
-  text-align: center;
+  min-width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-action);
+  color: #fff;
   font-size: var(--text-body-strong);
-  font-weight: 600;
+  font-weight: 700;
+  transition: transform 220ms var(--ease);
+}
+
+.pdp-qty-value.is-bumping {
+  animation: qty-bump 320ms var(--ease);
+}
+
+@keyframes qty-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.28); }
+  100% { transform: scale(1); }
 }
 
 .pdp-add-btn {
@@ -1160,6 +1195,171 @@
   }
 }
 
+/* ==========================================================================
+   Busca (js/search.js) — painel que desce do topo, centralizado, em vez de
+   gaveta lateral (pra não competir visualmente com o carrinho). Mesmo
+   z-index/scrim do carrinho, mas um nível acima (950/951) — nunca abertos
+   ao mesmo tempo na prática, mas assim a busca sempre vence se acontecer.
+   ========================================================================== */
+.search-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 17, 13, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-reveal) var(--ease);
+  z-index: 950;
+}
+
+.search-scrim.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.search-panel {
+  position: fixed;
+  top: 84px;
+  left: 50%;
+  width: min(560px, 92vw);
+  max-height: calc(100vh - 120px);
+  background: var(--color-canvas);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 60px rgba(20, 17, 13, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  transform: translate(-50%, -12px);
+  pointer-events: none;
+  transition: opacity var(--duration-reveal) var(--ease), transform var(--duration-reveal) var(--ease);
+  z-index: 951;
+}
+
+.search-panel.is-open {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-scrim,
+  .search-panel {
+    transition: none;
+  }
+}
+
+.search-input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  border-bottom: var(--border-hairline);
+  color: var(--color-ink-48);
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: none;
+  font: 400 var(--text-body)/1 var(--font-text);
+  color: var(--color-ink);
+}
+
+.search-input::placeholder {
+  color: var(--color-ink-48);
+}
+
+.search-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--color-ink-48);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 200ms var(--ease), color 200ms var(--ease);
+}
+
+.search-close:hover {
+  background: var(--color-canvas-alt);
+  color: var(--color-ink);
+}
+
+.search-results {
+  overflow-y: auto;
+  padding: var(--space-sm);
+}
+
+.search-hint {
+  padding: var(--space-lg);
+  font-size: var(--text-caption);
+  color: var(--color-ink-48);
+  text-align: center;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  transition: background 200ms var(--ease);
+}
+
+.search-result-item:hover {
+  background: var(--color-canvas-alt);
+}
+
+.search-result-item img {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.search-result-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.search-result-name {
+  font-size: var(--text-caption-strong);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.search-result-meta {
+  font-size: var(--text-fine);
+  color: var(--color-ink-48);
+}
+
+.search-catalog-link {
+  display: block;
+  text-align: center;
+  padding: var(--space-md);
+  font-size: var(--text-caption-strong);
+  font-weight: 600;
+  color: var(--color-action);
+}
+
+.search-catalog-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .search-panel {
+    top: 72px;
+    width: 94vw;
+  }
+}
+
 .cart-drawer-header {
   display: flex;
   align-items: center;
@@ -1232,31 +1432,59 @@
   gap: var(--space-sm);
 }
 
+/* Mesmo stepper "trio de pegas" do .pdp-qty-stepper, numa versão mais
+   compacta pro espaço apertado da gaveta do carrinho — ainda com alvos
+   de toque de 44px (acessibilidade), só com menos respiro entre eles. */
 .cart-line-qty {
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--color-hairline);
+  gap: 4px;
+  background: var(--color-canvas-alt);
   border-radius: var(--radius-pill);
+  padding: 3px;
 }
 
 .cart-line-qty-btn {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--color-ink);
-  font-size: 15px;
+  color: var(--color-ink-80);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  transition: background 200ms var(--ease), color 200ms var(--ease), border-color 200ms var(--ease), transform 150ms var(--ease);
+}
+
+.cart-line-qty-btn:hover {
+  background: var(--color-action);
+  border-color: var(--color-action);
+  color: #fff;
+}
+
+.cart-line-qty-btn:active {
+  transform: scale(0.88);
 }
 
 .cart-line-qty-value {
-  min-width: 22px;
-  text-align: center;
+  min-width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-action);
+  color: #fff;
   font-size: var(--text-caption-strong);
-  font-weight: 600;
+  font-weight: 700;
+}
+
+.cart-line-qty-value.is-bumping {
+  animation: qty-bump 320ms var(--ease);
 }
 
 .cart-line-price {
@@ -1640,6 +1868,24 @@
 
 .content-body p + p {
   margin-top: var(--space-md);
+}
+
+/* Subtítulos dentro de texto longo (termos de uso, política de privacidade) */
+.content-body h2 {
+  margin-top: var(--space-2xl);
+  margin-bottom: var(--space-sm);
+  font-size: var(--text-tagline);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.content-body h2:first-child {
+  margin-top: 0;
+}
+
+.content-body a {
+  color: var(--color-action);
+  text-decoration: underline;
 }
 
 .content-body + .btn {

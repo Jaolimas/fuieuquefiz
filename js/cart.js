@@ -19,6 +19,19 @@
   var scrimEl = null;
   var isOpen = false;
 
+  /* Ícones do stepper de quantidade — traço fino, mesmo estilo dos ícones
+     do nav (stroke-based), em vez dos glifos de texto "−"/"+" de antes. */
+  var QTY_ICON_MINUS = '<svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true"><line x1="2.5" y1="7" x2="11.5" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  var QTY_ICON_PLUS = '<svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true"><line x1="2.5" y1="7" x2="11.5" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="7" y1="2.5" x2="7" y2="11.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
+  /* renderDrawerBody() reconstrói o HTML inteiro da lista a cada mudança
+     (não só o item alterado), então um elemento novo já nasce com a
+     animação de "pulso" (@keyframes qty-bump) se a classe já vier no
+     template — sem precisar do truque de remover/reflow/recolocar classe.
+     Só marca o índice que mudou por último, pra só aquele item pulsar em
+     vez de todos, e é consumido (voltando a -1) logo depois de usado. */
+  var lastQtyChangeIndex = -1;
+
   /* ------------------------------------------------------------------
      State
      ------------------------------------------------------------------ */
@@ -187,6 +200,7 @@
 
     var linesHtml = items.map(function (item, index) {
       var subtotal = item.unitPrice * item.qty;
+      var qtyValueClass = "cart-line-qty-value" + (index === lastQtyChangeIndex ? " is-bumping" : "");
       return (
         '<div class="cart-line" data-index="' + index + '">' +
           '<div class="cart-line-info">' +
@@ -194,9 +208,9 @@
             (item.configSummary ? '<p class="cart-line-config">' + escapeHtml(item.configSummary) + '</p>' : '') +
             '<div class="cart-line-controls">' +
               '<div class="cart-line-qty">' +
-                '<button type="button" class="cart-line-qty-btn" data-action="decrease" aria-label="Diminuir quantidade">−</button>' +
-                '<span class="cart-line-qty-value">' + item.qty + '</span>' +
-                '<button type="button" class="cart-line-qty-btn" data-action="increase" aria-label="Aumentar quantidade">+</button>' +
+                '<button type="button" class="cart-line-qty-btn" data-action="decrease" aria-label="Diminuir quantidade">' + QTY_ICON_MINUS + '</button>' +
+                '<span class="' + qtyValueClass + '">' + item.qty + '</span>' +
+                '<button type="button" class="cart-line-qty-btn" data-action="increase" aria-label="Aumentar quantidade">' + QTY_ICON_PLUS + '</button>' +
               '</div>' +
               '<span class="cart-line-price">' + formatBRL(subtotal) + '</span>' +
             '</div>' +
@@ -211,6 +225,7 @@
     }).join("");
 
     bodyContainer.innerHTML = linesHtml;
+    lastQtyChangeIndex = -1; /* consumido — só vale pra este render */
 
     var totals = getCartTotals();
     var discountRowsHtml = totals.qualifies
@@ -238,12 +253,14 @@
       lineEl.querySelector('[data-action="decrease"]').addEventListener("click", function () {
         var current = readCart()[index];
         if (!current) return;
+        lastQtyChangeIndex = index;
         updateQty(index, current.qty - 1);
       });
 
       lineEl.querySelector('[data-action="increase"]').addEventListener("click", function () {
         var current = readCart()[index];
         if (!current) return;
+        lastQtyChangeIndex = index;
         updateQty(index, current.qty + 1);
       });
 

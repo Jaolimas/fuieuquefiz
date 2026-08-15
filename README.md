@@ -25,11 +25,13 @@ npx serve .
 ```
 fuieuquefiz/
 ├── index.html              → Home (hero, quiz de estilo que recomenda uma peça, destaques, sustentabilidade)
-├── catalogo.html            → Catálogo completo (15 peças, filtro por categoria, ordenação)
+├── catalogo.html            → Catálogo completo (19 peças, filtro por categoria, ordenação)
 ├── produto.html              → Página de detalhe de produto (?slug=... na URL)
 ├── sobre.html                → Nossa história / Nossa madeira / Processo / Trabalhe conosco
 ├── contato.html               → Fale com a gente / FAQ / Entrega e frete / Garantia
 ├── checkout.html              → Checkout Transparente — Payment Brick (cartão + Pix) embutido, sem sair do site
+├── termos-de-uso.html          → Termos de uso — texto de referência, ver item (f) abaixo
+├── politica-de-privacidade.html → Política de privacidade (LGPD) — texto de referência, ver item (f) abaixo
 ├── package.json                → Só declara "type": "module" (sintaxe ESM em api/*.js) — sem dependências, sem build step
 ├── data/
 │   └── products.json          → Fonte de verdade dos PREÇOS (usada só pelo backend para validar o total)
@@ -52,7 +54,8 @@ fuieuquefiz/
 │   ├── catalog.js               → Só em catalogo.html — grid filtrável/ordenável
 │   ├── product-page.js           → Só em produto.html — monta a página a partir do ?slug=
 │   ├── checkout-brick.js         → Só em checkout.html — monta o Payment Brick (cartão + Pix) e envia pro backend
-│   └── style-quiz.js              → Só em index.html — quiz de 3 perguntas que recomenda uma peça do catálogo
+│   ├── style-quiz.js              → Só em index.html — quiz de 3 perguntas que recomenda uma peça do catálogo
+│   └── search.js                  → Roda em toda página — busca client-side sobre PRODUCTS, painel que abre no ícone de lupa do nav
 ├── assets/
 │   └── scroll-video/          → Vídeos de versões anteriores do hero (não usados hoje — hero foi substituído por fotos e depois pelo quiz de estilo em index.html); mantidos caso queiram reaproveitar em outra seção
 └── HIGGSFIELD_PROMPTS.md          → Prompts prontos usados para gerar as fotos reais dos produtos no Higgsfield
@@ -66,20 +69,21 @@ O site está funcionalmente pronto, mas ainda tem algumas coisas de config/conte
 
 ### (a) Número de WhatsApp placeholder
 
-O número `5500000000000` é um placeholder e aparece em **8 arquivos**. Troque-o pelo número real da loja em todos eles (todos marcados com um comentário `TODO` no próprio código):
+O número `5500000000000` é um placeholder e aparece em **10 arquivos**. Troque-o pelo número real da loja em todos eles (todos marcados com um comentário `TODO` no próprio código):
 
 - `index.html` — CTA do hero ("Falar com um especialista") e link "WhatsApp" no rodapé.
 - `catalogo.html` — link "WhatsApp" no rodapé.
 - `produto.html` — link "WhatsApp" no rodapé.
 - `sobre.html` — botão "Falar com a gente no WhatsApp" (seção Trabalhe conosco) e link "WhatsApp" no rodapé.
 - `contato.html` — botão "Chamar no WhatsApp" e link "WhatsApp" no rodapé.
+- `termos-de-uso.html` / `politica-de-privacidade.html` — link de contato no final do texto, e link "WhatsApp" no rodapé.
 - `js/cart.js` — dentro de `checkoutViaWhatsApp()`, é o número usado para finalizar o pedido a partir do carrinho.
 
 Dica: buscar por `5500000000000` em todos os arquivos do projeto (ex: `Ctrl+Shift+F` no VS Code, ou `grep -rn "5500000000000" .`) garante que nenhuma ocorrência fique para trás.
 
 ### (b) E-mail placeholder
 
-`contato.html` usa `contato@fuieuquefiz.com.br` como e-mail de suporte (botão "Enviar e-mail", marcado com `TODO` no HTML). Troque pelo e-mail real de atendimento da loja.
+`contato.html`, `termos-de-uso.html` e `politica-de-privacidade.html` usam `contato@fuieuquefiz.com.br` como e-mail de suporte (marcado com `TODO` no HTML de cada um). Troque pelo e-mail real de atendimento da loja.
 
 ### (c) Depoimentos de exemplo
 
@@ -98,6 +102,14 @@ A seção `#quiz-estilo` em `index.html` roda um quiz de 3 perguntas ("que tipo 
 Essa seção já passou por duas versões antes: um vídeo único (aposentado, arquivos em `assets/scroll-video/`) e depois um carrossel de fotos com scroll travado (aposentado também, pra dar lugar a algo mais interativo/pesquisado — o padrão de quiz de descoberta converte melhor que vitrines passivas em marcas DTC). Cada produto em `js/products.js` tem um campo `styleTag` (`"bruto"` / `"estruturado"` / `"escultural"`, curado à mão) usado pela pergunta 2 do quiz — se adicionar um produto novo, vale atribuir um `styleTag` também, senão o quiz só ignora esse filtro pra ele.
 
 Pra mudar as perguntas/opções, edite o array `QUESTIONS` no topo de `js/style-quiz.js` — a lógica de recomendação (`pickRecommendation()`) já lida com qualquer combinação de categoria/preço/estilo que não tenha resultado exato, recuando pro filtro anterior.
+
+### (f) Termos de uso e política de privacidade — ⚠️ revisar antes de publicar
+
+`termos-de-uso.html` e `politica-de-privacidade.html` têm texto real (não é lorem ipsum), escrito pra refletir com precisão o que o site faz hoje — checkout via WhatsApp ou cartão/Pix pelo Mercado Pago, e-mail de recibo pelo Resend, aviso à loja pelo WhatsApp Business, carrinho só em localStorage, sem cookies/analytics de terceiros. **Isso não substitui revisão por um advogado** antes de valer pra clientes de verdade — a LGPD tem exigências específicas (nomear encarregado/DPO, prazos de resposta a titulares de dados etc.) que merecem um olhar profissional, e as cláusulas de garantia/trocas também deveriam ser conferidas contra o Código de Defesa do Consumidor. Ambas as páginas têm um comentário HTML no topo (não visível pro visitante) com esse mesmo aviso.
+
+### (g) Busca — ✅ já feito
+
+O ícone de lupa no nav (`#search-toggle`, presente em toda página) abre um painel de busca (`js/search.js`) que filtra o array `PRODUCTS` por nome, categoria e descrição curta — sem backend, sem índice separado, e ignora acentos (buscar "aco" encontra "aço"). Clicar num resultado leva direto pra `produto.html?slug=...`.
 
 ## Como publicar (deploy)
 

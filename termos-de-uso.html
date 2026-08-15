@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pagamento — FuiEuQueFiz</title>
-  <meta name="description" content="Finalize o pagamento das suas peças FuiEuQueFiz com cartão de crédito, débito ou Pix, sem sair do site.">
+  <title>Termos de Uso — FuiEuQueFiz</title>
+  <meta name="description" content="Termos de uso do site FuiEuQueFiz: pedidos, pagamento, prazos, garantia e responsabilidades.">
   <meta name="robots" content="noindex">
   <link rel="icon" href="assets/logo.jpg">
 
@@ -16,13 +16,17 @@
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/animations.css">
-
-  <!-- SDK oficial do Mercado Pago (Payment Brick) -->
-  <script src="https://sdk.mercadopago.com/js/v2"></script>
-  <!-- Device fingerprint antifraude: cria window.MP_DEVICE_SESSION_ID, lido em js/checkout-brick.js -->
-  <script src="https://www.mercadopago.com/v2/security.js" view="checkout"></script>
 </head>
 <body>
+
+  <!--
+    IMPORTANTE (comentário só pro dono do site, não aparece pra visitante):
+    Este texto foi escrito pra ser um ponto de partida sólido, cobrindo o
+    que o site realmente faz (checkout via WhatsApp, pagamento com cartão/
+    Pix via Mercado Pago, e-mail de recibo via Resend). Não substitui
+    revisão por um advogado antes de valer pra clientes de verdade —
+    principalmente as cláusulas de garantia, trocas e responsabilidade.
+  -->
 
   <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
 
@@ -68,89 +72,40 @@
   <!-- /REUSABLE NAV -->
 
   <main id="main-content">
-    <section class="section" aria-label="Pagamento">
-      <div class="container-grid">
-        <h1 class="reveal">Pagamento</h1>
-        <p class="lead reveal" style="margin-bottom: var(--space-2xl);">Pague com cartão ou Pix abaixo — você não sai do site em nenhum momento.</p>
+    <section class="section" aria-label="Termos de uso">
+      <div class="container-text">
+        <h1 class="content-title reveal">Termos de uso</h1>
+        <p class="content-lead reveal">Última atualização: agosto de 2026. Ao usar o site ou comprar uma peça da FuiEuQueFiz, você concorda com os termos abaixo.</p>
 
-        <div id="checkout-empty" class="checkout-empty" hidden>
-          <p class="content-body">Sua lista está vazia.</p>
-          <a class="btn btn--primary" href="catalogo.html">Ver catálogo</a>
-        </div>
+        <div class="content-body reveal">
+          <h2>1. Sobre a FuiEuQueFiz</h2>
+          <p>A FuiEuQueFiz é uma marca de móveis rústicos industriais feitos à mão, sob encomenda, em madeira de reflorestamento certificado e ferro forjado artesanalmente. Peças de tronco, fatia e galho natural (adegas, mesas, espelhos) são únicas por natureza — cor, veio e formato variam de peça para peça, e a foto do site é sempre uma referência, não uma garantia de reprodução exata.</p>
 
-        <div id="checkout-grid" class="checkout-grid">
-          <div class="checkout-summary" aria-label="Resumo do pedido">
-            <h2 class="checkout-summary-title">Resumo</h2>
-            <div id="checkout-summary-lines"></div>
-            <div class="price-subtotal-row" id="checkout-subtotal-row" hidden>
-              <span>Subtotal</span>
-              <span id="checkout-subtotal">R$ 0</span>
-            </div>
-            <div class="price-discount-row" id="checkout-discount-row" hidden>
-              <span>Desconto (5%)</span>
-              <span id="checkout-discount">-R$ 0</span>
-            </div>
-            <div class="checkout-total-row">
-              <span>Total</span>
-              <span id="checkout-total">R$ 0</span>
-            </div>
-            <p class="gift-promo-note" id="checkout-gift-note"></p>
-            <p class="cart-microcopy">Frete e prazo de produção são combinados por WhatsApp após a confirmação do pagamento.</p>
-          </div>
+          <h2>2. Pedidos e orçamento</h2>
+          <p>Você pode montar sua lista de peças e finalizar o pedido de duas formas: (a) pelo WhatsApp, onde nossa equipe confirma disponibilidade, prazo e valor de frete antes de qualquer cobrança; ou (b) pagando direto no site com cartão de crédito, débito ou Pix — nesse caso, o frete e o prazo de produção continuam sendo combinados por WhatsApp depois da confirmação do pagamento, já que variam por peça e por CEP.</p>
+          <p>Preços exibidos no site podem ser alterados sem aviso prévio, mas o valor cobrado é sempre o vigente no momento da confirmação do pedido — nunca cobramos um valor diferente do que foi mostrado a você no checkout.</p>
 
-          <div class="checkout-brick-col">
-            <!-- Madeira deformada — textura de fundo animada por um filtro
-                 SVG (feTurbulence + feDisplacementMap), bem sutil, atrás do
-                 formulário de pagamento. Puramente decorativo. -->
-            <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-              <filter id="wood-warp-filter" x="-20%" y="-20%" width="140%" height="140%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.009 0.045" numOctaves="2" seed="7" result="noise">
-                  <animate attributeName="baseFrequency" dur="24s" values="0.009 0.045;0.013 0.03;0.009 0.045" repeatCount="indefinite" />
-                </feTurbulence>
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="28" xChannelSelector="R" yChannelSelector="G" />
-              </filter>
-            </svg>
-            <div class="checkout-wood-warp" aria-hidden="true"></div>
+          <h2>3. Pagamento</h2>
+          <p>Pagamentos com cartão e Pix são processados pelo Mercado Pago. O número do seu cartão nunca é armazenado nem processado pelos nossos servidores — ele é tokenizado diretamente pelo Mercado Pago dentro do formulário de pagamento. Não temos acesso aos dados completos do seu cartão em nenhum momento.</p>
 
-            <div class="checkout-brick-content">
-            <div id="checkout-result" class="checkout-result" hidden></div>
-            <div id="checkout-pix" class="checkout-pix" hidden>
-              <img id="checkout-pix-qr" class="checkout-pix-qr" alt="QR Code para pagamento via Pix">
-              <p class="checkout-pix-hint">Escaneie o QR Code com o app do seu banco, ou copie o código Pix abaixo:</p>
-              <div class="checkout-pix-code-row">
-                <code id="checkout-pix-code" class="checkout-pix-code"></code>
-                <button type="button" id="checkout-pix-copy" class="btn btn--ghost">Copiar código</button>
-              </div>
-            </div>
-            <div id="checkout-receipt" class="checkout-receipt" hidden>
-              <h2 class="checkout-receipt-title">Resumo do seu pedido</h2>
-              <div id="checkout-receipt-lines"></div>
-              <div class="price-subtotal-row" id="checkout-receipt-subtotal-row" hidden>
-                <span>Subtotal</span>
-                <span id="checkout-receipt-subtotal">R$ 0</span>
-              </div>
-              <div class="price-discount-row" id="checkout-receipt-discount-row" hidden>
-                <span>Desconto (5%)</span>
-                <span id="checkout-receipt-discount">-R$ 0</span>
-              </div>
-              <div class="checkout-total-row">
-                <span>Total</span>
-                <span id="checkout-receipt-total">R$ 0</span>
-              </div>
-              <p class="gift-promo-note is-active" id="checkout-receipt-gift-note" hidden>🎁 Seu pedido ganhou um brinde da FuiEuQueFiz e 5% de desconto!</p>
-              <p id="checkout-receipt-payment" class="checkout-receipt-payment"></p>
-              <form id="checkout-receipt-form" class="checkout-receipt-form">
-                <label for="checkout-receipt-email" class="checkout-receipt-label">Receber esse resumo por e-mail</label>
-                <div class="checkout-receipt-email-row">
-                  <input type="email" id="checkout-receipt-email" class="text-input" placeholder="seu@email.com" required autocomplete="email">
-                  <button type="submit" class="btn btn--ghost" id="checkout-receipt-send-btn">Enviar por e-mail</button>
-                </div>
-                <p id="checkout-receipt-status" class="checkout-receipt-status" role="status" aria-live="polite"></p>
-              </form>
-            </div>
-            <div id="payment-brick-container"></div>
-            </div>
-          </div>
+          <h2>4. Prazo de produção e entrega</h2>
+          <p>Cada peça tem um prazo de produção próprio, informado na página do produto (de peças prontas para entrega imediata a peças sob encomenda de até 9 semanas). O frete é calculado por CEP e por peça, e agendado com você antes do envio. Peças que exigem montagem já saem com a montagem inclusa.</p>
+
+          <h2>5. Trocas, devoluções e garantia</h2>
+          <p>Por serem feitas sob encomenda, as peças têm política de troca limitada a defeito de fabricação comprovado, mediante fotos e relato do problema em até 7 dias após o recebimento. Todas as peças têm 12 meses de garantia contra defeito de fabricação (problemas estruturais de marcenaria, solda ou fixação) — desgaste natural do uso e da exposição ao ambiente não é coberto. Peças em fatia/galho/tronco natural têm variações de veio, cor e pequenas rachaduras que são características do material, não defeito.</p>
+
+          <h2>6. Propriedade intelectual</h2>
+          <p>Textos, fotos, design e identidade visual deste site pertencem à FuiEuQueFiz. Não é permitido copiar ou reutilizar esse conteúdo sem autorização.</p>
+
+          <h2>7. Limitação de responsabilidade</h2>
+          <p>Fazemos o possível para manter as informações do site precisas e atualizadas, mas não garantimos ausência total de erros (de preço, descrição ou disponibilidade) — qualquer erro identificado será corrigido assim que possível, e nenhuma cobrança é feita sem sua confirmação explícita do valor correto.</p>
+
+          <h2>8. Alterações nestes termos</h2>
+          <p>Podemos atualizar estes termos de tempos em tempos. A versão vigente é sempre a publicada nesta página, com a data de atualização no topo.</p>
+
+          <h2>9. Contato</h2>
+          <!-- TODO: substituir pelos contatos reais da loja (mesmos usados em contato.html) -->
+          <p>Dúvidas sobre estes termos? Fale com a gente pelo <a href="https://wa.me/5500000000000?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20os%20termos%20de%20uso.">WhatsApp</a> ou pelo e-mail <a href="mailto:contato@fuieuquefiz.com.br">contato@fuieuquefiz.com.br</a>.</p>
         </div>
       </div>
     </section>
@@ -225,6 +180,5 @@
   <script src="js/cart.js" defer></script>
   <script src="js/main.js" defer></script>
   <script src="js/search.js" defer></script>
-  <script src="js/checkout-brick.js" defer></script>
 </body>
 </html>

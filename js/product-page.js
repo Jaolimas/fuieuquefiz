@@ -16,6 +16,21 @@
   var relatedGrid = document.getElementById("related-products");
   if (!pdpRoot) return;
 
+  /* Ícones do stepper de quantidade — traço fino, mesmo estilo dos ícones
+     do nav (stroke-based), em vez dos glifos de texto "−"/"+" de antes. */
+  var QTY_ICON_MINUS = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><line x1="2.5" y1="7" x2="11.5" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  var QTY_ICON_PLUS = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><line x1="2.5" y1="7" x2="11.5" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="7" y1="2.5" x2="7" y2="11.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
+  /* Reinicia a animação de "pulso" (@keyframes qty-bump) toda vez que a
+     quantidade muda — força reflow removendo e recolocando a classe,
+     senão cliques rápidos em sequência não re-disparam a animação. */
+  function bumpQtyValue(el) {
+    if (!el) return;
+    el.classList.remove("is-bumping");
+    void el.offsetWidth;
+    el.classList.add("is-bumping");
+  }
+
   var params = new URLSearchParams(window.location.search);
   var slug = params.get("slug");
   var product = PRODUCTS.filter(function (p) { return p.slug === slug; })[0];
@@ -186,9 +201,9 @@
         '<div class="pdp-qty-row">' +
           '<span class="pdp-finish-label">Quantidade</span>' +
           '<div class="pdp-qty-stepper">' +
-            '<button type="button" class="pdp-qty-btn" id="pdp-qty-minus" aria-label="Diminuir quantidade">−</button>' +
+            '<button type="button" class="pdp-qty-btn" id="pdp-qty-minus" aria-label="Diminuir quantidade">' + QTY_ICON_MINUS + '</button>' +
             '<span class="pdp-qty-value" id="pdp-qty-value">' + state.qty + '</span>' +
-            '<button type="button" class="pdp-qty-btn" id="pdp-qty-plus" aria-label="Aumentar quantidade">+</button>' +
+            '<button type="button" class="pdp-qty-btn" id="pdp-qty-plus" aria-label="Aumentar quantidade">' + QTY_ICON_PLUS + '</button>' +
           '</div>' +
         '</div>' +
         '<button type="button" class="btn btn--primary pdp-add-btn" id="pdp-add-btn">Adicionar ao carrinho</button>' +
@@ -230,6 +245,7 @@
         if (state.qty > 1) {
           state.qty -= 1;
           qtyValue.textContent = state.qty;
+          bumpQtyValue(qtyValue);
           updateBuyBar();
         }
       });
@@ -239,6 +255,7 @@
       plusBtn.addEventListener("click", function () {
         state.qty += 1;
         qtyValue.textContent = state.qty;
+        bumpQtyValue(qtyValue);
         updateBuyBar();
       });
     }
