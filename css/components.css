@@ -1933,7 +1933,15 @@
   max-width: 220px;
 }
 
+/* .text-input tem `flex: 1 1 200px` pensado pra ficar lado a lado numa
+   linha (ver .checkout-coupon-row/.checkout-receipt-email-row) — mas
+   .checkout-address-field é `flex-direction: column`, então nesse
+   contexto o eixo principal é vertical e aquele "200px" de flex-basis
+   vira ALTURA, não largura, inflando cada campo num oval gigante. Reseta
+   o flex aqui pra a altura voltar a ser natural (min-height do
+   .text-input), só a largura acompanha o container (100%). */
 .checkout-address-field .text-input {
+  flex: none;
   width: 100%;
 }
 
